@@ -190,6 +190,7 @@ def datashuffle(parsedrules, listofdatalines):
         sortorder = line[4]
         sourcefile = open(sourcefilename, 'a+').close()   # the equivalent of "touch", to ensure that sourcefile exists
         sourcefile = open(sourcefilename, 'r')            # sourcefilemust already exist, opened in read-only mode
+        print "%-2s %-10s %-10s %-10s" % (searchfield, searchkey, sourcefilename, targetfilename)
         for line in sourcefile:       # iterate to split each line into awk-like "fields"
               listofdatalines.append(line)
         sourcefile.close() # once lines sucked out of sourcefile, put into listofdatalines, sourcefile no longer needed
@@ -212,18 +213,23 @@ def datashuffle(parsedrules, listofdatalines):
             # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
             # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open the source file for reading
 
+def datacleanup():
+    listofdatafiles = datals()
+    for file in listofdatafiles:
+        if os.path.getsize(file) == 0:
+            os.remove(file)
+
 if __name__ == "__main__":
     listofdatafiles = datals()
     listofdatalines = datalines(listofdatafiles)
     datasizebefore = datasize(listofdatalines)
-    rawrules = getrawrules(['/home/tbaker/u/folders/PYTH/SHUFFLE/.ruleall', './.rules'])
+    rawrules = getrawrules(['./.ruleall', './.rules'])
     parsedrules = parserawrules(rawrules)
     rulesanitycheck(parsedrules)
     databackup(listofdatafiles)
-
     datashuffle(parsedrules, listofdatalines)
-    # print "%-2s %-10s %-10s %-10s" % (searchfield, searchkey, sourcefilename, targetfilename)
-    #datacleanup()
+    datacleanup()
+
     #datalsafter = datals('combined.dat')
     #datalinesafter = datalines(datalsafter)
     #datasizeafter = datasize(datalinesafter)
