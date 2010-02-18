@@ -1,0 +1,4 @@
+=2010-02-16 Tue 1400 TELECON
+=2010-02-16 Tue 1900 RDF2 http://decentralyze.com/2009/10/30/rdf-2-wishlist/
+=2010-02-17 Wed 0800 TELECON
+=2010-08-24 Tue 0800 TELECON

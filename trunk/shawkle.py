@@ -213,26 +213,15 @@ def datashuffle(parsedrules, listofdatalines):
             # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open the source file for reading
 
 if __name__ == "__main__":
-    # listofdatafiles = datals()
-    # listofdatalines = datalines(listofdatafiles)
-    # datasizebefore = datasize(listofdatalines)
-    # databackup(listofdatafiles)  # in practice, would not want to do this until rules have passed the test
-    # rawrules = getrawrules(['/home/tbaker/u/folders/PYTH/SHUFFLE/.ruleall', './.rules'])
-    # parsedrules = parserawrules(rawrules)
-    # rulesanitycheck(parsedrules)
-
-    parsedrules = [['0', '.', 'foobar.dat', 'lines', 'sort -bdf'], ['0', '^2010-.. ', 'lines', 'agendaa', ''], ['0', '.', 'lines', 'HUH.txt', ''], ['0', '.', 'agendaa', 'HUH.txt', 'sort'], ['1', '^=$', 'HUH.txt', 'A.txt', ''], ['1', 'LATER', 'HUH.txt', 'B.txt', ''], ['1', '^=20', 'HUH.txt', 'calendar.txt', '']]
-
-    listofdatalines = ['=2010-02-16 Tue 1400-1500 EST (1100-1200 PST) UWASHTELECON\n', '=2010-02-16 Tue 1900 RDF2 http://decentralyze.com/2009/10/30/rdf-2-wishlist/\n', '=2010-02-16 Tue 1900 RDF2 http://semweb.meetup.com/31/calendar/12335279/ \n', '=2010-02-17 Wed 0800 KIMTWR telecon\n', '=2010-02-24 Wed 0800 Jury Summons\n', '= http://www.w3.org/2009/07/skos-pr.html.en\n', 'FTMP e:/u/folders/DUTCH/VOCAMP/.index.html\n', '= e:/u/folders/+FTMP/Reading-notes-roy-on-rest.txt\n', 'WORK DC2009   e:/u/folders/DC/TUTORIAL - 0900-1030, 1100-1230\n']
+    listofdatafiles = datals()
+    listofdatalines = datalines(listofdatafiles)
+    datasizebefore = datasize(listofdatalines)
+    rawrules = getrawrules(['/home/tbaker/u/folders/PYTH/SHUFFLE/.ruleall', './.rules'])
+    parsedrules = parserawrules(rawrules)
+    rulesanitycheck(parsedrules)
+    databackup(listofdatafiles)
 
     datashuffle(parsedrules, listofdatalines)
-
-
-
-
-    #subprocess.call(["rm", "combined.dat"]) # @@@ for testing!
-    #subprocess.call(["ls", "-l"])        # @@@ for testing!
-    #datashuffle(rulelist, datalinesbefore, 'lines.txt', 'target.tmp')
     # print "%-2s %-10s %-10s %-10s" % (searchfield, searchkey, sourcefilename, targetfilename)
     #datacleanup()
     #datalsafter = datals('combined.dat')
@@ -246,71 +235,3 @@ if __name__ == "__main__":
     #    print 'Size after:', datasizeafter
     #    print "Warning: data may have been lost--use backup!"
 
-# ----------------------------------------------------------------
-# Sort field
-# ----------------------------------------------------------------
-# 1. what are the possible values for field 5 ("sort")?
-#    for item in rulelist:
-#        # sortorder must contain valid parameters for sort.
-#        #     else print "X: sort parameters not valid."
-#        #         print offending rule; exit
-# if sortorder (for targetfilename) is specified...
-#     sort targetfilename according to sortorder
-#         need to find a sort function.
-#     else print Bad rule-file sort command: sortorder" and exit
-#         if sortorder is bad, should be caught before datarelocate starts.
-
-# ----------------------------------------------------------------
-# Datarelocate
-# ----------------------------------------------------------------
-## def datarelocate():
-##     """Parses ./.locations and relocates files on its basis."""
-##     pass
-##     # destinations = open('/home/tbaker/u/agenda/.destinations')
-##     # timestamp = $(date +%Y-%m-%d.%H%M)
-##     # read destinations
-##     #     $1 = file
-##     #     $2 = destination directory
-##     # defaultdestination is /home/tbaker/u/folders/+FTMP
-##     # try to open file (1)
-##     #     if not exist, then next
-##     #     if exist then
-##     #         rename file to file.$timestamp
-##     #         if destination directory (2) exists, then move file.$timestamp there.
-##     #             print Moving file.$timestamp to $2.
-##     #         else move the file to defaultdestination
-##     #             print Moving file.$timestamp to $2.
-## 
-## # This is the data structure that needs to be encoded in .locations:
-## # agendaa /home/tbaker/u/agenda
-## # agendab /home/tbaker/u/agendab
-## # agendai /home/tbaker/u/folders/WASHDC/INVENTORY/agendai
-## # agendan /home/tbaker/u/agendab
-## # agendac /home/tbaker/u/agendac
-## # agendad /home/tbaker/u/folders/TOM/dreams
-## # agendaf /home/tbaker/u/agendaf
-## # agendap /home/tbaker/person/agendap
-## # agendapy /home/tbaker/u/folders/PY/agendapy
-## # agendaw /home/tbaker/u/agendaf
-## # agendax /home/tbaker/acct/agendax
-## # agenday /home/tbaker/u/agenday
-## # agendaz /home/tbaker/person/agendaz
-
-# ----------------------------------------------------------------
-# Datacleanup
-# ----------------------------------------------------------------
-#def datacleanup():
-#    filelist = []
-#    pathnamelist = os.listdir(os.getcwd())
-#    for pathname in pathnamelist:
-#        if os.path.isfile(pathname) == True:
-#            if pathname[0] != ".":
-#                filelist.append(pathname)
-#    for file in filelist:
-#        if os.path.getsize(file) == 0:
-#            os.remove(file)
-
-# ----------------------------------------------------------------
-# tempfile module, if needed
-# ----------------------------------------------------------------
-# Tempfile module, Nutshell p223
