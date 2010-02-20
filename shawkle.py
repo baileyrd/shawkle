@@ -164,7 +164,6 @@ def rulesanitycheck(parsedrules):
         searchfield = line[0]
         searchkey = line[1]
         sourcefilename = line[2]
-        # sourcefiles.append(sourcefilename) # is this needed?
         targetfilename = line[3]
         targetfiles.append(targetfilename)
         sortorder = line[4]
@@ -188,30 +187,44 @@ def datashuffle(parsedrules, listofdatalines):
         sourcefilename = line[2]
         targetfilename = line[3]
         sortorder = line[4]
-        sourcefile = open(sourcefilename, 'a+').close()   # the equivalent of "touch", to ensure that sourcefile exists
+        sourcefile = open(sourcefilename, 'a+').close()   # like "touch", to ensure that sourcefile exists
         sourcefile = open(sourcefilename, 'r')            # sourcefilemust already exist, opened in read-only mode
-        print "%-2s %-10s %-10s %-10s" % (searchfield, searchkey, sourcefilename, targetfilename)
         for line in sourcefile:       # iterate to split each line into awk-like "fields"
               listofdatalines.append(line)
-        sourcefile.close() # once lines sucked out of sourcefile, put into listofdatalines, sourcefile no longer needed
+              # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open source file for reading?
+              # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
+        sourcefile.close() # once lines sucked from sourcefile to listofdatalines, readable sourcefile no longer needed
         sourcefile = open(sourcefilename, 'w')     # opened write-only, overwritten if exists, else created
         targetfile = open(targetfilename, 'a+')    # opened for reading/writing, kept intact, appended, maybe created
+        print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
         number = 0
-        for dataline in listofdatalines:
-            if searchkey in dataline[:]:     # or listofdatalines[0] (if field 1 is 1)...
-                # This is okay for testing, but clearly need to replace ":" with searchfield
-                # if searchkey in x[searchkey-1]:  # "0" to be replaced with regular expression using searchfield
-                # if searchkey in linestripped[searchfield-1] == True: # searchkey matches field# searchfield minus 1
-                targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
-                number = number + 1
-        targetfile.close()
-        number = 0
-        for dataline in listofdatalines: # for all remaining lines (lines that do not have searchkey in searchfield)
-            sourcefile.write(listofdatalines.pop(number)) # pop line, appending to new sourcefile
-            number = number + 1
-            # or something like: sourcefile.write(line)
-            # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
-            # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open the source file for reading
+        for line in listofdatalines:
+            if line[0] == 0:
+                print 'searchfield in line 1 is zero'
+            if line[0]  == 1:
+                print 'searchfield in line 1 is 1'
+            else:
+                print 'line is neither'
+        1/0
+        #     #    #print searchkey, searchfield
+        #     if searchkey in ' '.join(line):
+        #         targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
+        #     else:
+        #         sourcefile.write(listofdatalines.pop(number)) # pop line, appending to new sourcefile
+        #         # or something like: sourcefile.write(line)
+        # targetfile.close()
+        # sourcefile.close()
+
+        #for dataline in listofdatalines:
+        #    if searchkey in dataline[:]:     # or listofdatalines[0] (if field 1 is 1)...
+        #        # This is okay for testing, but clearly need to replace ":" with searchfield
+        #        # if searchkey in x[searchkey-1]:  # "0" to be replaced with regular expression using searchfield
+        #        # if searchkey in linestripped[searchfield-1] == True: # searchkey matches field# searchfield minus 1
+        #        targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
+        #        number = number + 1
+        #number = 0
+        #for dataline in listofdatalines: # for all remaining lines (lines that do not have searchkey in searchfield)
+        #    number = number + 1
 
 def datacleanup():
     listofdatafiles = datals()
@@ -222,13 +235,14 @@ def datacleanup():
 if __name__ == "__main__":
     listofdatafiles = datals()
     listofdatalines = datalines(listofdatafiles)
+    listofdatalinesbefore = datalines(listofdatafiles)
     datasizebefore = datasize(listofdatalines)
     rawrules = getrawrules(['./.ruleall', './.rules'])
     parsedrules = parserawrules(rawrules)
     rulesanitycheck(parsedrules)
-    databackup(listofdatafiles)
-    datashuffle(parsedrules, listofdatalines)
-    datacleanup()
+    # databackup(listofdatafiles)
+    # datashuffle(parsedrules, listofdatalines)
+    # datacleanup()
 
     #datalsafter = datals('combined.dat')
     #datalinesafter = datalines(datalsafter)
