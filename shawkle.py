@@ -199,13 +199,15 @@ def datashuffle(parsedrules, listofdatalines):
         print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
         number = 0
         for line in listofdatalines:
-            if line[0] == 0:
-                print 'searchfield in line 1 is zero'
-            if line[0]  == 1:
-                print 'searchfield in line 1 is 1'
-            else:
-                print 'line is neither'
-        1/0
+            print line
+
+            #if line[0] == 0:
+            #    print 'searchfield in line 1 is zero'
+            #if line[0]  == 1:
+            #    print 'searchfield in line 1 is 1'
+            #else:
+            #    print 'line is neither'
+        # 1/0
         #     #    #print searchkey, searchfield
         #     if searchkey in ' '.join(line):
         #         targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
