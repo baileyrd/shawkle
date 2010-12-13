@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
-
 from __future__ import division     # overrides existing division function - this does NOT truncate
 import os
 import sys
 import string
 import sys
 import shutil
-import subprocess   # @@@@ for testing purposes
-import tempfile
+# import tempfile
 
 def stringblockistext(s, threshold=0.30):
     """Tests whether 's' (a string) is text or not.  Arguments:
