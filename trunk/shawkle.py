@@ -1,65 +1,95 @@
 #!/usr/bin/env python
 
-from __future__ import division     # overrides existing division function - this does NOT truncate
 import os
 import sys
 import string
 import sys
 import shutil
-# import tempfile
+import shawkle
 
 def stringblockistext(s, threshold=0.30):
-    """Tests whether 's' (a string) is text or not.  Arguments:
-    -- "s": a string
-    -- optional "threshold": proportion  of string that can be non-text characters
-       before the string is considered not to be text.  Default is 30%.
-    See Python Cookbook, p. 25."""
+    """Tests whether a given string consists of text or not.  
+        Used in fileistextfile().  From: Python Cookbook, p.25.
+    Takes as arguments:
+        "s" - a string
+        Optional "threshold" -
+            proportion of the string that can be non-text characters before the string 
+            is considered not to be text.  Default is 30%.
+    Calls:
+        string.maketrans()
+    Called by:
+        fileistextfile()
+    Requires:
+        import string"""
     text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
-    _null_trans = string.maketrans("", "")        # ensure "import string"
-    if "\0" in s:                                 # if s contains any null, it's not text
+    _null_trans = string.maketrans("", "")
+    if "\0" in s:     # if s contains any null, it's not text
         return False
-    if not s:                                     # an "empty" string is "text" (arbitrary but reasonable choice)
+    if not s:         # an "empty" string is "text" (arbitrary but reasonable choice)
         return True
     t = s.translate(_null_trans, text_characters) # Get the substring of s made up of non-text characters
     return len(t)/len(s) <= threshold             # s is 'text' if less than 30% of its characters are non-text ones
 
-def fileistextfile(filename, blocksize=512, **kwds):
-    """Reads a block of characters (of length "blocksize", default 512 bytes)
-    at the beginning of "filename".
-    Calls "stringblockistext" function.  If character block does not pass test, says
-    "x is not a text file" and exits."""
-    if stringblockistext(open(filename).read(blocksize), **kwds) != True:
+def fileistextfile(filename, blocksize=512):
+    """Tests whether a given file consists of text.
+        Does this by reading block of characters at beginning of file.
+    Takes as arguments:
+        filename
+        blocksize - default is 512 bytes
+    Calls:
+        stringblockistext()  
+        open(filename).read(blocksize)
+    Ends program with error message:
+        If character block does not pass test.
+    Returns:
+        Nothing returned ("fruitless" function)."""
+    if not stringblockistext(open(filename).read(blocksize)):
         print filename, 'is not a text file.  Exiting...'
         sys.exit()
 
 def datals():
-    """Return list of files in current directory, 
-    excluding dot files and directories.
-    Exits with error message if non-data files, or 
-    files with swp or lock extensions are encountered."""
+    """Takes as argument
+        none - by default looks at $PWD/*
+    Returns:
+        List of files in current directory, 
+        excluding dot files and subdirectories.
+    Ends program with error message:
+        On encountering a file ending in .swp or .lock.
+    Calls:
+        os.listdir() os.getcwd() os.path.isfile()
+        sys.exit
+    """
     filelist = []
     pathnamelist = os.listdir(os.getcwd())
     for pathname in pathnamelist:
         if os.path.isfile(pathname) == True:
             if pathname[0] != ".":
-                if pathname[-3:] != "swp":
-                    pass
-                else:
+                if pathname[-3:] == "swp":
                     print pathname, 'is apparently a swap file.  Exiting...'
                     sys.exit()
-                if pathname[-4:] != "lock":
-                    pass
-                else:
+                if pathname[-4:] == "lock":
                     print pathname, 'is apparently a lock file.  Exiting...'
                     sys.exit()
                 filelist.append(pathname)
     return filelist
 
 def datalines(datafileslisted):
-    """Takes list of data files as argument.
-    Checks to make sure the file is really a 'text file'.
-    Creates list of all lines in all of the data files.
-    Exits with error message if file with a blank line is encountered."""
+    """Takes as argument: 
+        List of data files.
+    What it does:
+        Checks to make sure the file is really a 'text file'.
+        Creates list of all lines in all of the data files.
+    Exits with error message:
+        On encountering a file with blank lines.
+    Returns:
+        List of all lines from all (plain-text) files in the working directory.
+    Calls:
+        mustbelist()
+        fileistextfile()
+        open(file).readlines() - reads in whole file at once and splits by line
+        LIST.append()
+        sys.exit
+    """
     mustbelist(datafileslisted)
     alldatalines = []
     for file in datafileslisted:
@@ -74,9 +104,16 @@ def datalines(datafileslisted):
     return alldatalines
 
 def datasize(alldatalines):
-    """Compute size of aggregate data lines. 
-    Takes variable representing a list of data lines as argument.
-    Returns an integer (i.e., the number of bytes)."""
+    """Compute aggregate size of a given list of data lines. 
+    Takes as argument:
+        alldatalines - variable represents a list of data lines
+    Calls:
+        shawkle.mustbelist()
+        sys.exit()
+    Exits with error message:
+        If computed size is zero.
+    Returns:
+        datasize - an integer (number of bytes)."""
     mustbelist(alldatalines)
     datasize = 0
     for line in alldatalines:
@@ -92,10 +129,18 @@ def mustbelist(argument):
         sys.exit()
 
 def databackup(datals):
+    """Backs up list of files to directory ".backup".
+        Rotates contents of backup directories:
+            ".backupii" to ".backupiii"
+            ".backupi" to ".backupii"
+            ".backup" to ".backupi"
+    Takes as argument:
+        none - by default looks at $PWD/*
+    """
     mustbelist(datals)
     backupdirs = ['.backup', '.backupi', '.backupii', '.backupiii']
     for dir in backupdirs:
-        if os.path.isdir(dir) == False:
+        if not os.path.isdir(dir):
             os.mkdir(dir)
     shutil.rmtree(backupdirs[3])
     print 'Removing', backupdirs[3]
@@ -109,45 +154,46 @@ def databackup(datals):
         print 'Moving to', backupdirs[0], ":", file
         shutil.move(file, backupdirs[0])
 
-def getrawrules(listofrulefiles):
-    """Creates a list of rules (each of which is a list of five components).
-    First argument is a list of rule files (if only a list of just one item)."""
+def mklistofrulesraw(listofrulefiles):
+    """Makes a consolidated list of rules
+        Each rule is itself a list of five components.
+    First argument is a list of rule files (if only a list of just one item).
+    Parses raw rules into fields, deleting comments and blank lines."""
     mustbelist(listofrulefiles)
-    rawrules = []
+    listofrulesraw = []
     for file in listofrulefiles:
         try:
             lines = open(file, 'rU').readlines()
-            rawrules.extend(lines)
+            listofrulesraw.extend(lines)
         except:
             print 'Rule file', file, 'does not exist.  Exiting...'
             sys.exit()
-    return rawrules
+    return listofrulesraw
 
-def parserawrules(rawrules):
-    """Parses raw rules into fields, deleting comments and blank lines."""
-    mustbelist(rawrules)
-    parsedrules = []
-    for line in rawrules:
-        w = line.strip()
-        y = w.partition('#')[0]
-        z = y.rstrip()
-        x = z.split('|')
-        if len(x) == 5:
-            try:
-                x[0] = int(x[0])
-            except:
-                print x
-                print 'First field must be an integer.  Exiting...'
-                sys.exit()
-            if len(x[1]) > 0:
-                if len(x[2]) > 0:
-                    if len(x[3]) > 0:
-                        parsedrules.append(x)
-            else:
-                print x
-                print 'Fields 2, 3, and 4 must be non-empty.  Exiting...'
-                sys.exit()
-    return parsedrules
+def mklistofrulesparsed(listofrulesraw):
+    for line in listofrules:
+        print line
+        type(line)
+        # w = line.strip()
+        # y = w.partition('#')[0]
+        # z = y.rstrip()
+        # x = z.split('|')
+        # if len(x) == 5:
+        #     try:
+        #         x[0] = int(x[0])
+        #     except:
+        #         print x
+        #         print 'First field must be an integer.  Exiting...'
+        #         sys.exit()
+        #     if len(x[1]) > 0:
+        #         if len(x[2]) > 0:
+        #             if len(x[3]) > 0:
+        #                 listofrules.append(x)
+        #     else:
+        #         print x
+        #         print 'Fields 2, 3, and 4 must be non-empty.  Exiting...'
+        #         sys.exit()
+    return listofrulesparsed
 
 def rulesanitycheck(parsedrules):
     """Check rules for sanity."""
@@ -180,52 +226,26 @@ def datashuffle(parsedrules, listofdatalines):
     -- listofdatalines, handle for a list of data lines (already aggregated from all data files in directory)."""
     mustbelist(parsedrules)
     mustbelist(listofdatalines)
-    for line in parsedrules:
-        searchfield = line[0]
-        searchkey = line[1]
-        sourcefilename = line[2]
-        targetfilename = line[3]
-        sortorder = line[4]
-        sourcefile = open(sourcefilename, 'a+').close()   # like "touch", to ensure that sourcefile exists
-        sourcefile = open(sourcefilename, 'r')            # sourcefilemust already exist, opened in read-only mode
-        for line in sourcefile:       # iterate to split each line into awk-like "fields"
-              listofdatalines.append(line)
-              # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open source file for reading?
-              # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
-        sourcefile.close() # once lines sucked from sourcefile to listofdatalines, readable sourcefile no longer needed
-        sourcefile = open(sourcefilename, 'w')     # opened write-only, overwritten if exists, else created
-        targetfile = open(targetfilename, 'a+')    # opened for reading/writing, kept intact, appended, maybe created
-        print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
-        number = 0
-        for line in listofdatalines:
-            print line
-
-            #if line[0] == 0:
-            #    print 'searchfield in line 1 is zero'
-            #if line[0]  == 1:
-            #    print 'searchfield in line 1 is 1'
-            #else:
-            #    print 'line is neither'
-        # 1/0
-        #     #    #print searchkey, searchfield
-        #     if searchkey in ' '.join(line):
-        #         targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
-        #     else:
-        #         sourcefile.write(listofdatalines.pop(number)) # pop line, appending to new sourcefile
-        #         # or something like: sourcefile.write(line)
-        # targetfile.close()
-        # sourcefile.close()
-
-        #for dataline in listofdatalines:
-        #    if searchkey in dataline[:]:     # or listofdatalines[0] (if field 1 is 1)...
-        #        # This is okay for testing, but clearly need to replace ":" with searchfield
-        #        # if searchkey in x[searchkey-1]:  # "0" to be replaced with regular expression using searchfield
-        #        # if searchkey in linestripped[searchfield-1] == True: # searchkey matches field# searchfield minus 1
-        #        targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
-        #        number = number + 1
-        #number = 0
-        #for dataline in listofdatalines: # for all remaining lines (lines that do not have searchkey in searchfield)
-        #    number = number + 1
+    for iteration in range[1]:
+        for line in parsedrules:
+            searchfield = line[0]
+            searchkey = line[1]
+            sourcefilename = line[2]
+            targetfilename = line[3]
+            sortorder = line[4]
+            ## sourcefile = open(sourcefilename, 'a+').close()   # like "touch", to ensure that sourcefile exists
+            ## sourcefile = open(sourcefilename, 'r')  # sourcefilemust already exist, opened in read-only mode
+            for line in sourcefile:       # iterate to split each line into awk-like "fields"
+                  listofdatalines.append(line)
+                  # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open source file for reading?
+                  # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
+            ## sourcefile.close() # once lines sucked from sourcefile, readable sourcefile no longer needed
+            ## sourcefile = open(sourcefilename, 'w')     # opened write-only, overwritten if exists, else created
+            ## targetfile = open(targetfilename, 'a+')    # opened for reading/writing, kept intact, appended, maybe created
+            print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
+            number = 0
+            for line in listofdatalines:
+                print line
 
 def datacleanup():
     listofdatafiles = datals()
@@ -234,25 +254,80 @@ def datacleanup():
             os.remove(file)
 
 if __name__ == "__main__":
-    listofdatafiles = datals()
-    listofdatalines = datalines(listofdatafiles)
-    listofdatalinesbefore = datalines(listofdatafiles)
-    datasizebefore = datasize(listofdatalines)
-    rawrules = getrawrules(['./.ruleall', './.rules'])
-    parsedrules = parserawrules(rawrules)
-    rulesanitycheck(parsedrules)
-    # databackup(listofdatafiles)
-    # datashuffle(parsedrules, listofdatalines)
-    # datacleanup()
+    os.chdir('/home/tbaker/u/scripts/PYFFLE/shawkle/testdata')
+    listofdatafiles = shawkle.datals()
+    listofdatalines = shawkle.datalines(listofdatafiles)
+    listofdatalinestoconsume = listofdatalines
+    rulesraw = shawkle.mklistofrulesraw(['./.ruleall', './.rules'])
+    for rule in rulesraw:
+        for line in listofdatalines:
+            splitline = line.split()
+            print splitline[1]
 
-    #datalsafter = datals('combined.dat')
-    #datalinesafter = datalines(datalsafter)
-    #datasizeafter = datasize(datalinesafter)
-    # Compares aggregate size of data before and after and reports discrepancies."""
-    #if datasizebefore == datasizeafter:
-    #    print "Done: data shuffled and intact!"
-    #else:
-    #    print 'Size before:', datasizebefore
-    #    print 'Size after:', datasizeafter
-    #    print "Warning: data may have been lost--use backup!"
 
+
+
+
+
+## #######################################
+## 
+##     # listofdatalinesfielded = shawkle.datalinesfielded(listofdatalines)
+## 
+## # 2010-12-19 This is not actually necessary if refer to, say, line[2] in listofdatalines
+## # def datalinesfielded(listofdatalines):
+## #     for line in listofdatalines:
+## #         fieldedline = line.split()
+## #         listofdata...
+## 
+## # From main
+## 
+##     #datalsafter = datals('combined.dat')
+##     #datalinesafter = datalines(datalsafter)
+##     #datasizeafter = datasize(datalinesafter)
+##     # Compares aggregate size of data before and after and reports discrepancies."""
+##     #if datasizebefore == datasizeafter:
+##     #    print "Done: data shuffled and intact!"
+##     #else:
+##     #    print 'Size before:', datasizebefore
+##     #    print 'Size after:', datasizeafter
+##     #    print "Warning: data may have been lost--use backup!"
+## 
+##     # datasizebefore = shawkle.datasize(listofdatalines)
+##     # rulesanitycheck(parsedrules)
+##     # databackup(listofdatafiles)
+##     # datashuffle(parsedrules, listofdatalines)
+##     # datacleanup()
+## 
+## # From datashuffle
+##             #if line[0] == 0:
+##             #    print 'searchfield in line 1 is zero'
+##             #if line[0]  == 1:
+##             #    print 'searchfield in line 1 is 1'
+##             #else:
+##             #    print 'line is neither'
+## 
+##         # 1/0
+##         #     #    #print searchkey, searchfield
+##         #     if searchkey in ' '.join(line):
+##         #         targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
+##         #     else:
+##         #         sourcefile.write(listofdatalines.pop(number)) # pop line, appending to new sourcefile
+##         #         # or something like: sourcefile.write(line)
+##         # targetfile.close()
+##         # sourcefile.close()
+## 
+##         #for dataline in listofdatalines:
+##         #    if searchkey in dataline[:]:     # or listofdatalines[0] (if field 1 is 1)...
+##         #        # This is okay for testing, but clearly need to replace ":" with searchfield
+##         #        # if searchkey in x[searchkey-1]:  # "0" to be replaced with regular expression using searchfield
+##         #        # if searchkey in linestripped[searchfield-1] == True: # searchkey matches field# searchfield minus 1
+##         #        targetfile.write(listofdatalines.pop(number)) # pop line, appending to to targetfilename
+##         #        number = number + 1
+##         #number = 0
+##         #for dataline in listofdatalines: # for all remaining lines (lines that do not have searchkey in searchfield)
+##         #    number = number + 1
+## 
+## 
+## # From initial declarations
+##     # from __future__ import division     # overrides existing division function - this does NOT truncate
+##     # import tempfile
