@@ -171,9 +171,11 @@ def mklistofrulesraw(listofrulefiles):
     return listofrulesraw
 
 def mklistofrulesparsed(listofrulesraw):
-    for line in listofrules:
-        print line
-        type(line)
+    listofrulesparsed = []
+    for line in listofrulesraw:
+        listofulesparsed.append(line)
+    return listofrulesparsed
+
         # w = line.strip()
         # y = w.partition('#')[0]
         # z = y.rstrip()
@@ -193,7 +195,6 @@ def mklistofrulesparsed(listofrulesraw):
         #         print x
         #         print 'Fields 2, 3, and 4 must be non-empty.  Exiting...'
         #         sys.exit()
-    return listofrulesparsed
 
 def rulesanitycheck(parsedrules):
     """Check rules for sanity."""
@@ -219,33 +220,18 @@ def rulesanitycheck(parsedrules):
             print 'The sourcefilename has no precedent targetfilename.  Exiting...'
             sys.exit()
 
-def datashuffle(parsedrules, listofdatalines):
-    """Perform data shuffle, reporting success or error.
-    Arguments are:
-    -- parsedrules: a list of rules, already created and verified
-    -- listofdatalines, handle for a list of data lines (already aggregated from all data files in directory)."""
+def getrulecomponents(parsedrules):
+    """For each rule in listofrules, return parsed rule."""
     mustbelist(parsedrules)
-    mustbelist(listofdatalines)
-    for iteration in range[1]:
-        for line in parsedrules:
-            searchfield = line[0]
-            searchkey = line[1]
-            sourcefilename = line[2]
-            targetfilename = line[3]
-            sortorder = line[4]
-            ## sourcefile = open(sourcefilename, 'a+').close()   # like "touch", to ensure that sourcefile exists
-            ## sourcefile = open(sourcefilename, 'r')  # sourcefilemust already exist, opened in read-only mode
-            for line in sourcefile:       # iterate to split each line into awk-like "fields"
-                  listofdatalines.append(line)
-                  # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open source file for reading?
-                  # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
-            ## sourcefile.close() # once lines sucked from sourcefile, readable sourcefile no longer needed
-            ## sourcefile = open(sourcefilename, 'w')     # opened write-only, overwritten if exists, else created
-            ## targetfile = open(targetfilename, 'a+')    # opened for reading/writing, kept intact, appended, maybe created
-            print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
-            number = 0
-            for line in listofdatalines:
-                print line
+    for line in parsedrules:
+        searchfield = line[0]
+        searchkey = line[1]
+        sourcefilename = line[2]
+        targetfilename = line[3]
+        sortorder = line[4]
+        x = (searchfield, searchkey, sourcefilename, targetfilename)
+        print "%-2s %-15s %-15s %-15s" % x
+        return x
 
 def datacleanup():
     listofdatafiles = datals()
@@ -259,6 +245,8 @@ if __name__ == "__main__":
     listofdatalines = shawkle.datalines(listofdatafiles)
     listofdatalinestoconsume = listofdatalines
     rulesraw = shawkle.mklistofrulesraw(['./.ruleall', './.rules'])
+    parsedrules = mklistofrulesparsed(rulesraw)
+    rulecomponents = getrulecomponents(parsedrules)
     for rule in rulesraw:
         for line in listofdatalines:
             splitline = line.split()
@@ -331,3 +319,31 @@ if __name__ == "__main__":
 ## # From initial declarations
 ##     # from __future__ import division     # overrides existing division function - this does NOT truncate
 ##     # import tempfile
+
+# 2010-12-21 def datashuffle(parsedrules, listofdatalines):
+# 2010-12-21     """Perform data shuffle, reporting success or error.
+# 2010-12-21     Arguments are:
+# 2010-12-21     -- parsedrules: a list of rules, already created and verified
+# 2010-12-21     -- listofdatalines, handle for a list of data lines (already aggregated from all data files in directory)."""
+# 2010-12-21     mustbelist(parsedrules)
+# 2010-12-21     mustbelist(listofdatalines)
+# 2010-12-21     for iteration in range[1]:
+# 2010-12-21         for line in parsedrules:
+# 2010-12-21             searchfield = line[0]
+# 2010-12-21             searchkey = line[1]
+# 2010-12-21             sourcefilename = line[2]
+# 2010-12-21             targetfilename = line[3]
+# 2010-12-21             sortorder = line[4]
+# 2010-12-21             ## sourcefile = open(sourcefilename, 'a+').close()   # like "touch", to ensure that sourcefile exists
+# 2010-12-21             ## sourcefile = open(sourcefilename, 'r')  # sourcefilemust already exist, opened in read-only mode
+# 2010-12-21             for line in sourcefile:       # iterate to split each line into awk-like "fields"
+# 2010-12-21                   listofdatalines.append(line)
+# 2010-12-21                   # what about: sourcefile = open(sourcefilename, 'a+').readlines()  # first open source file for reading?
+# 2010-12-21                   # or something like: listofdatalines = open(sourcefilename, 'r').readlines()
+# 2010-12-21             ## sourcefile.close() # once lines sucked from sourcefile, readable sourcefile no longer needed
+# 2010-12-21             ## sourcefile = open(sourcefilename, 'w')     # opened write-only, overwritten if exists, else created
+# 2010-12-21             ## targetfile = open(targetfilename, 'a+')    # opened for reading/writing, kept intact, appended, maybe created
+# 2010-12-21             print "%-2s %-15s %-15s %-15s" % (searchfield, searchkey, sourcefilename, targetfilename)
+# 2010-12-21             number = 0
+# 2010-12-21             for line in listofdatalines:
+# 2010-12-21                 print line
