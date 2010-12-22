@@ -4,6 +4,9 @@ import os
 import sys
 
 def getrules(listofrulefiles):
+    """Makes a consolidated list of rules, each rule itself a list of components.
+        Argument: list of rule files (if only a list of just one item).
+        Parses raw rules into fields, deleting comments and blank lines."""
     listofrulesraw = []
     for file in listofrulefiles:
         try:
@@ -31,7 +34,7 @@ def getrules(listofrulefiles):
                         listofrulesparsed.append(linesplitonorbar)
             else:
                 print linesplitonorbar
-                print 'Fields 2, 3, and 4 must be non-empty.  Exiting...'
+                print 'Fields 2, 3, and 4 must be non-empty - exiting...'
                 sys.exit()
     targetfiles = []
     count = 0
@@ -44,39 +47,16 @@ def getrules(listofrulefiles):
                 print sourcefilename
                 print 'The sourcefilename has no precedent targetfilename.  Exiting...'
                 sys.exit()
+        try:
+            open(targetfilename, 'a+').close()  # like "touch", ensures that sourcefile exists
+        except:
+            print 'Cannot open', targetfilename, 'as a file for appending - exiting...'
+            sys.exit()
         count = count + 1
     return listofrulesparsed
 
-def datalines(datafileslisted):
-    alldatalines = []
-    for file in datafileslisted:
-        fin = open(file).readlines()
-        for line in fin:
-            if len(line) == 1:
-                print 'file', file, 'has blank lines.  Exiting...'
-                sys.exit()
-            else:
-                alldatalines.append(line)
-    return alldatalines
-
-def getrulecomponents(parsedrules):
-    """For each rule in listofrules, return parsed rule."""
-    for line in parsedrules:
-        searchfield = line[0]
-        searchkey = line[1]
-        sourcefilename = line[2]
-        targetfilename = line[3]
-        sortorder = line[4]
-        x = (searchfield, searchkey, sourcefilename, targetfilename)
-        print "%-2s %-15s %-15s %-15s" % x
-        return x
-
 if __name__ == "__main__":
     rules = getrules(['testdata/.ruleall', 'testdata/.rules'])
-    #
-    listofdatafiles = ['testdata/calendar.txt', 'testdata/huh.txt']
-    listofdatalines = datalines(listofdatafiles)
-    #
     #for rule in parsedrules:
     #    for line in listofdatalines:
     #        splitline = line.split()
