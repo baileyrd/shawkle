@@ -7,32 +7,6 @@ import sys
 import shutil
 import shawkle
 
-def datals():
-    """Takes as argument
-        none - by default looks at $PWD/*
-    Returns:
-        List of files in current directory, 
-        excluding dot files and subdirectories.
-    Ends program with error message:
-        On encountering a file ending in .swp or .lock.
-    Calls:
-        os.listdir() os.getcwd() os.path.isfile()
-        sys.exit
-    """
-    filelist = []
-    pathnamelist = os.listdir(os.getcwd())
-    for pathname in pathnamelist:
-        if os.path.isfile(pathname) == True:
-            if pathname[0] != ".":
-                if pathname[-3:] == "swp":
-                    print pathname, 'is apparently a swap file.  Exiting...'
-                    sys.exit()
-                if pathname[-4:] == "lock":
-                    print pathname, 'is apparently a lock file.  Exiting...'
-                    sys.exit()
-                filelist.append(pathname)
-    return filelist
-
 def datasize(alldatalines):
     """Compute aggregate size of a given list of data lines. 
     Takes as argument:
