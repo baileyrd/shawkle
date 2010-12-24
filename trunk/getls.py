@@ -25,7 +25,7 @@ def databackup(filelist):
         if not os.path.isdir(dir):
             os.mkdir(dir)
     shutil.rmtree(backupdirs[3])
-    print 'Removing', backupdirs[3]
+    print 'Bumping off', backupdirs[3]
     shutil.move(backupdirs[2], backupdirs[3])
     print 'Moving contents of', backupdirs[2], "to", backupdirs[3]
     shutil.move(backupdirs[1], backupdirs[2])
