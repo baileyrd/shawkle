@@ -1,7 +1,0 @@
-#!/bin/bash
-
-today=$(date +%Y%m%d%H%M)
-
-mv -i testdata testdata.$today
-cp -Rip testdata-template ./testdata
-./getls.py
