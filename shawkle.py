@@ -21,7 +21,7 @@ def datals():
                 filelist.append(pathname)
     return filelist
 
-def datamovetobackup(filelist):
+def databackup(filelist):
     """Backs up list of files in $PWD to ".backup", bumping previous to ".backupi", ".backupii", ".backupiii"."""
     if not filelist:
         print 'No data here to back up, or process... - exiting...'
@@ -40,8 +40,8 @@ def datamovetobackup(filelist):
     shutil.move(backupdirs[0], backupdirs[1])
     os.mkdir(backupdirs[0])
     for file in filelist:
-        print 'Moving file', file, "to", backupdirs[0]
-        shutil.move(file, backupdirs[0])
+        print 'Copying file', file, "to", backupdirs[0]
+        shutil.copy2(file, backupdirs[0])
 
 def totalsize():
     totalsize = 0
@@ -62,16 +62,20 @@ def getdatalines(datafileslisted):
     for file in datafileslisted:
         try:
             fin = open(file).readlines()
+            for line in fin:
+                if len(line) == 1:
+                    print 'File', file, 'has blank lines - exiting...'
+                    sys.exit()
+            fin.close()
         except:
             print 'Cannot open', file, '-- exiting...'
             sys.exit()
+    for file in datafileslisted:
         fin = open(file).readlines()
         for line in fin:
-            if len(line) == 1:
-                print 'File', file, 'has blank lines - exiting...'
-                sys.exit()
-            else:
-                alldatalines.append(line)
+            alldatalines.append(line)
+        fin.close()
+        print 'os.remove(fin)'
     alldatalines.sort()
     return alldatalines
 
@@ -152,16 +156,24 @@ def getrules(listofrulefiles):
         count = count + 1
     return listofrulesparsed
 
+def datacleanup():
+    listofpathnames = os.listdir(os.getcwd())
+    for file in listofpathnames:
+        if os.path.isfile(file):
+            if os.path.getsize(file) == 0:
+                print 'Removing zero-length file:', file
+                os.remove(file)
+
 if __name__ == "__main__":
     listofdatafiles = datals()
     print 'list of data files is:', listofdatafiles
+    databackup(listofdatafiles)
     ckfilesaretext(listofdatafiles)
     sizebefore = totalsize()
     datalines = getdatalines(listofdatafiles)
     print datalines
     rules = getrules(['.ruleall', '.rules'])
     print rules
-    #datamovetobackup(listofdatafiles)
     #count = 0
     #for rule in rules:
     #    searchfield = rule[0]
@@ -185,6 +197,7 @@ if __name__ == "__main__":
     #        targetfile.writelines([ dataline for dataline in data if not searchkey in dataline.split()[searchfield] ])
     #    sourcefile.close()
     #    targetfile.close()
+    #datacleanup()
 
 #    sizeafter = totalsize()
 #    print 'size of files before was:', sizebefore
