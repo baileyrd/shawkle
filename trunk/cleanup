@@ -3,9 +3,9 @@
 import os
 
 def datacleanup():
-    listoffiles = os.listdir(os.getcwd())
-    for file in listoffiles:
-        if os.path.isfile(pathname):
+    listofpathnames = os.listdir(os.getcwd())
+    for file in listofpathnames:
+        if os.path.isfile(file):
             if os.path.getsize(file) == 0:
                 print 'Removing zero-length file:', file
                 os.remove(file)
