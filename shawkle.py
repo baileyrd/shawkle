@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
+from __future__ import with_statement
 import os
 import re
 import shutil
@@ -39,9 +40,10 @@ def databackup(filelist):
     print 'Moving directory', backupdirs[0], "to", backupdirs[1]
     shutil.move(backupdirs[0], backupdirs[1])
     os.mkdir(backupdirs[0])
-    for file in filelist:
-        print 'Copying file', file, "to", backupdirs[0]
-        shutil.copy2(file, backupdirs[0])
+    #2011-01-01: will move files to .backup only in getdatalines() function now
+    #for file in filelist:
+    #    print 'Copying file', file, "to", backupdirs[0]
+    #    shutil.copy2(file, backupdirs[0])
 
 def totalsize():
     totalsize = 0
@@ -61,26 +63,28 @@ def getdatalines(datafileslisted):
     alldatalines = []
     for file in datafileslisted:
         try:
-            fin = open(file).readlines()
-            for line in fin:
+            openfile = open(file, 'r')
+            openfilelines = openfile.readlines()
+            for line in openfilelines:
                 if len(line) == 1:
                     print 'File', file, 'has blank lines - exiting...'
                     sys.exit()
-            fin.close()
         except:
-            print 'Cannot open', file, '-- exiting...'
+            print 'Cannot open', file, '- exiting...'
             sys.exit()
+        openfile.close()
     for file in datafileslisted:
-        fin = open(file).readlines()
-        for line in fin:
+        openfile = open(file, 'r')
+        openfilelines = openfile.readlines()
+        for line in openfilelines:
             alldatalines.append(line)
-        fin.close()
-        print 'os.remove(fin)'
+        openfile.close()
+        shutil.move(file, '.backup')
     alldatalines.sort()
     return alldatalines
 
-def ckfilesaretext(datafiles):
-    """Tests whether a file consists of text - see Python Cookbook, p.25."""
+def ckthatfilesaretext(datafiles):
+    """Tests whether a file consists of text; exits if not - based on Python Cookbook, p.25."""
     for file in datafiles:
         givenstring = open(file).read(512)
         text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
@@ -105,11 +109,13 @@ def getrules(listofrulefiles):
     listofrulesraw = []
     for file in listofrulefiles:
         try:
-            lines = open(file, 'rU').readlines()
-            listofrulesraw.extend(lines)
+            openrulefile = open(file, 'rU')
+            openrulefilelines = openrulefile.readlines()
+            listofrulesraw.extend(openrulefilelines)
         except:
             print 'Rule file', file, 'does not exist.  Exiting...'
             sys.exit()
+        openrulefile.close()
     listofrulesparsed = []
     for line in listofrulesraw:
         linestripped = line.strip()
@@ -161,19 +167,127 @@ def datacleanup():
     for file in listofpathnames:
         if os.path.isfile(file):
             if os.path.getsize(file) == 0:
-                print 'Removing zero-length file:', file
                 os.remove(file)
+                print 'Removing zero-length file:', file
 
 if __name__ == "__main__":
+    datacleanup()
     listofdatafiles = datals()
-    print 'list of data files is:', listofdatafiles
-    databackup(listofdatafiles)
-    ckfilesaretext(listofdatafiles)
+    ckthatfilesaretext(listofdatafiles)
+    #databackup(listofdatafiles)
     sizebefore = totalsize()
-    datalines = getdatalines(listofdatafiles)
-    print datalines
-    rules = getrules(['.ruleall', '.rules'])
-    print rules
+    #rules = getrules(['.ruleall', '.rules'])
+    rules = [[0, '^2010-', 'aaa.txt', '2010.txt', ''],
+     [0, '^A ', 'aaa.txt', 'agendaa.txt', ''],
+     [0, '.', 'aaa.txt', 'HUH.txt', ''],
+     [7, '=2', 'HUH.txt', 'calendar.txt', ''],
+     [1, 'LATER', 'HUH.txt', 'LATER.txt', ''],
+     [1, 'NOW', 'HUH.txt', 'NOW.txt', '']]
+    #datalines = getdatalines(listofdatafiles)
+    datalines = ['2010-02 To be archived...\n',
+     '=2010-02-15\n',
+     '=2010-02-15 Tue 1400 TELECON\n',
+     '=2010-02-15 Tue 1900 RDF2 http://decentralyze.com/2009/10/30/rdf-2-wishlist/\n',
+     '=2010-02-17 Wed 0800 TELECON\n',
+     '=2010-08-24 Tue 0800 TELECON\n',
+     'A LATER Belongs in agendaa\n',
+     'LATER Haircut\n',
+     'LATER http://www.asis.org/\n',
+     'NOW Buy milk\n',
+     'NOW Shovel snow\n']
+    rulenumber = 0
+    for rule in rules:
+        rulenumber += 1
+        field = rule[0]
+        searchkey = rule[1]
+        source = rule[2]
+        target = rule[3]
+        print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
+        if rulenumber == 1:
+            data = datalines
+        else:
+            readonlysource = open(source, 'r')
+            data = readonlysource.readlines()
+            readonlysource.close()
+        sfile = open(source, 'w')
+        tfile = open(target, 'a')
+        if field == 0:
+            if searchkey == ".":
+                tfile.writelines([ line for line in data ])
+            else:
+                sfile.writelines([ line for line in data if re.search(searchkey, line) ])
+                tfile.writelines([ line for line in data if not re.search(searchkey, line) ])
+        else:
+            ethfield = field - 1
+            try:
+                sfile.writelines([ line for line in data if re.search(searchkey, line.split()[ethfield]) ])
+            except IndexError:
+                sfile.writelines([ line for line in data ])
+            try:
+                #tfile.writelines([ line for line in data if not re.search(searchkey, line.split()[ethfield]) ])
+        ##sfile.close()
+        ##tfile.close()
+    datacleanup()
+    sizeafter = totalsize()
+    if sizebefore == sizeafter:
+        print 'Done: data shawkled and intact!'
+    else:
+        print 'Warning: data may have been lost - revert to backup!'
+
+# As of 2011-01-06
+#    rulenumber = 0
+#    for rule in rules:
+#        rulenumber += 1
+#        searchfield = rule[0]
+#        searchkey = rule[1]
+#        source = rule[2]
+#        target = rule[3]
+#        print '%s [%s] "%s" to "%s"' % (searchfield, searchkey, source, target)
+#        if rulenumber != 1:
+#            readonlysource = open(source, 'r')
+#            data = readonlysource.readlines()
+#            readonlysource.close()
+#        sfile = open(source, 'w')
+#        tfile = open(target, 'a')
+#        if searchfield == 0:
+#            if searchkey == ".":
+#                tfile.writelines(data)
+#            else:
+#                sfile.writelines([ line for line in data if not re.search(searchkey, line) ])
+#                tfile.writelines([ line for line in data if re.search(searchkey, line) ])
+#        else:
+#            ethsearchfield = searchfield - 1
+#            sfile.writelines([ line for line in data if not re.search(searchkey, line.split()[ethsearchfield]) ])
+#            tfile.writelines([ line for line in data if re.search(searchkey, line.split()[ethsearchfield]) ])
+#        sfile.close()
+#        tfile.close()
+
+
+
+
+
+
+
+
+
+# Notes:
+# 2010-12-25
+#    sourcefile.writelines([ dataline for dataline in data if re.match(searchkey, dataline) ])
+#    sourcefile.writelines([ dataline for dataline in data if re.search(searchkey, dataline) ])
+#    - "search" matches anywhere, "match" matches at start of string
+#    - typically, want to assume start of string
+#    - but what about if "^AGENDA" is supposed to come after "^A "...?
+#
+#    Next: maybe need to test for list?
+#        def mustbelist(argument):
+#            if type(argument) != list:
+#                print 'Argument be a list, if only a list of one.  Exiting...'
+#                sys.exit()
+#    [4, 'TELECON', 'aaa.txt', 'telecon.txt', ''],
+#            sourcefile.writelines([ line for line in data if searchkey in line.split()[ethsearchfield] ])
+#            targetfile.writelines([ line for line in data if not searchkey in line.split()[ethsearchfield] ])
+#        sourcefile.close()
+
     #count = 0
     #for rule in rules:
     #    searchfield = rule[0]
@@ -197,21 +311,7 @@ if __name__ == "__main__":
     #        targetfile.writelines([ dataline for dataline in data if not searchkey in dataline.split()[searchfield] ])
     #    sourcefile.close()
     #    targetfile.close()
-    #datacleanup()
 
-#    sizeafter = totalsize()
-#    print 'size of files before was:', sizebefore
-#    print 'size of files after is:', sizeafter
 
-# Notes:
-# 2010-12-25
-#    sourcefile.writelines([ dataline for dataline in data if re.match(searchkey, dataline) ])
-#    sourcefile.writelines([ dataline for dataline in data if re.search(searchkey, dataline) ])
-#    - "search" matches anywhere, "match" matches at start of string
-#    - typically, want to assume start of string
-#    - but what about if "^AGENDA" is supposed to come after "^A "...?
-#    Next: maybe need to test for list?
-#        def mustbelist(argument):
-#            if type(argument) != list:
-#                print 'Argument be a list, if only a list of one.  Exiting...'
-#                sys.exit()
+# Known weaknesses:
+# -- needs to check for filenames different only with respect to case ('later' versus 'LATER').
