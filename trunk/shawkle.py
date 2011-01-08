@@ -52,7 +52,7 @@ def totalsize():
         if os.path.isfile(file):
             filesize = os.path.getsize(file)
             if filesize == 0:
-                print 'Removing zero-length file:', file
+                # print 'Removing zero-length file:', file # MAYBE RESTORE THIS
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -174,7 +174,6 @@ if __name__ == "__main__":
     datacleanup()
     listofdatafiles = datals()
     ckthatfilesaretext(listofdatafiles)
-    databackup(listofdatafiles)
     sizebefore = totalsize()
     rules = [[0, '^2010-', 'aaa.txt', '2010.txt', ''],
      [0, '^A ', 'aaa.txt', 'agendaa.txt', ''],
@@ -183,6 +182,7 @@ if __name__ == "__main__":
      [1, 'LATER', 'HUH.txt', 'LATER.txt', ''],
      [1, 'NOW', 'HUH.txt', 'NOW.txt', '']]
     rules = getrules(['.ruleall', '.rules'])
+    databackup(listofdatafiles)
     datalines = ['2010-02 To be archived...\n',
      '=2010-02-15\n',
      '=2010-02-15 Tue 1400 TELECON\n',
@@ -238,122 +238,3 @@ if __name__ == "__main__":
     else:
         print 'Warning: data may have been lost - revert to backup!'
 
-# As of 2011-01-06
-#    rulenumber = 0
-#    for rule in rules:
-#        rulenumber += 1
-#        searchfield = rule[0]
-#        searchkey = rule[1]
-#        source = rule[2]
-#        target = rule[3]
-#        print '%s [%s] "%s" to "%s"' % (searchfield, searchkey, source, target)
-#        if rulenumber != 1:
-#            readonlysource = open(source, 'r')
-#            data = readonlysource.readlines()
-#            readonlysource.close()
-#        sfile = open(source, 'w')
-#        tfile = open(target, 'a')
-#        if searchfield == 0:
-#            if searchkey == ".":
-#                tfile.writelines(data)
-#            else:
-#                sfile.writelines([ line for line in data if not re.search(searchkey, line) ])
-#                tfile.writelines([ line for line in data if re.search(searchkey, line) ])
-#        else:
-#            ethsearchfield = searchfield - 1
-#            sfile.writelines([ line for line in data if not re.search(searchkey, line.split()[ethsearchfield]) ])
-#            tfile.writelines([ line for line in data if re.search(searchkey, line.split()[ethsearchfield]) ])
-#        sfile.close()
-#        tfile.close()
-
-
-
-
-
-
-
-
-
-# Notes:
-# 2010-12-25
-#    sourcefile.writelines([ dataline for dataline in data if re.match(searchkey, dataline) ])
-#    sourcefile.writelines([ dataline for dataline in data if re.search(searchkey, dataline) ])
-#    - "search" matches anywhere, "match" matches at start of string
-#    - typically, want to assume start of string
-#    - but what about if "^AGENDA" is supposed to come after "^A "...?
-#
-#    Next: maybe need to test for list?
-#        def mustbelist(argument):
-#            if type(argument) != list:
-#                print 'Argument be a list, if only a list of one.  Exiting...'
-#                sys.exit()
-#    [4, 'TELECON', 'aaa.txt', 'telecon.txt', ''],
-#            sourcefile.writelines([ line for line in data if searchkey in line.split()[ethsearchfield] ])
-#            targetfile.writelines([ line for line in data if not searchkey in line.split()[ethsearchfield] ])
-#        sourcefile.close()
-
-    #count = 0
-    #for rule in rules:
-    #    searchfield = rule[0]
-    #    searchkey = rule[1]
-    #    source = rule[2]
-    #    target = rule[3]
-    #    if count > 0:
-    #        data = datalines
-    #    else:
-    #        with open(source, 'r') as datatoread:
-    #            data = datatoread.readlines()
-    #    sourcefile = open(source, 'w')
-    #    targetfile = open(target, 'a')
-    #    print "%-10s %-10s %-10s %-10s" % (searchfield, searchkey, source, target)
-    #    if searchfield == 0:
-    #        sourcefile.writelines([ dataline for dataline in data if re.match(searchkey, dataline) ])
-    #        sourcefile.writelines([ dataline for dataline in data if not re.match(searchkey, dataline) ])
-    #    else:
-    #        searchfield = searchfield - 1
-    #        sourcefile.writelines([ dataline for dataline in data if searchkey in dataline.split()[searchfield] ])
-    #        targetfile.writelines([ dataline for dataline in data if not searchkey in dataline.split()[searchfield] ])
-    #    sourcefile.close()
-    #    targetfile.close()
-
-
-# Known weaknesses:
-# -- needs to check for filenames different only with respect to case ('later' versus 'LATER').
-
-
-
-#    rulenumber = 0
-#    for rule in rules:
-#        rulenumber += 1
-#        field = rule[0]
-#        searchkey = rule[1]
-#        source = rule[2]
-#        target = rule[3]
-#        print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
-#        if rulenumber == 1:
-#            data = datalines
-#        else:
-#            readonlysource = open(source, 'r')
-#            data = readonlysource.readlines()
-#            readonlysource.close()
-#        sfile = open(source, 'w')
-#        tfile = open(target, 'a')
-#        if field == 0:
-#            if searchkey == ".":
-#                #tfile.writelines([ line for line in data ])
-#                pass
-#            else:
-#                #sfile.writelines([ line for line in data if re.search(searchkey, line) ])
-#                #tfile.writelines([ line for line in data if not re.search(searchkey, line) ])
-#                pass
-#        else:
-#            ethfield = field - 1
-#            for line in data:
-#                #if line.split()[field] >
-#            try:
-#                sfile.writelines([ line for line in data if re.search(searchkey, line.split()[ethfield]) ])
-#                tfile.writelines([ line for line in data if not re.search(searchkey, line.split()[ethfield]) ])
-#            except IndexError:
-#                sfile.writelines([ line for line in data ])
-#        sfile.close()
-#        tfile.close()
