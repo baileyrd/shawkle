@@ -113,7 +113,7 @@ def getrules(listofrulefiles):
             openrulefilelines = openrulefile.readlines()
             listofrulesraw.extend(openrulefilelines)
         except:
-            print 'Rule file', file, 'does not exist.  Exiting...'
+            print 'Rule file', file, 'does not exist - exiting...'
             sys.exit()
         openrulefile.close()
     listofrulesparsed = []
@@ -127,7 +127,7 @@ def getrules(listofrulefiles):
                 linesplitonorbar[0] = int(linesplitonorbar[0])
             except:
                 print linesplitonorbar
-                print 'First field must be an integer.  Exiting...'
+                print 'First field must be an integer - exiting...'
                 sys.exit()
             if len(linesplitonorbar[1]) > 0:
                 if len(linesplitonorbar[2]) > 0:
@@ -147,7 +147,7 @@ def getrules(listofrulefiles):
             createdfiles.append(sourcefilename)
         if sourcefilename == targetfilename:
             print 'In rules:', rule
-            print 'SourceFile:', sourcefilename, '...is the same as TargetFile:', targetfilename, '-- exiting...'
+            print 'SourceFile:', sourcefilename, '...is the same as TargetFile:', targetfilename, '- exiting...'
             sys.exit()
         if not sourcefilename in createdfiles:
             print rule
