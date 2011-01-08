@@ -1,0 +1,20 @@
+2|^e:|lines.tmp|huh3|
+2|^irc:|lines.tmp|huh3|
+2|^http:|lines.tmp|huh3|
+0|.|huh3|lines|
+0|.|lines.tmp|lines|
+0|^__|lines|agendab|
+0|^A |lines|agenda|
+0|^B |lines|agendab|
+0|^N |lines|agendab|
+0|^X |lines|agendax|
+0|^Y |lines|agenday|
+0|^C |lines|agendab|
+#0|^\\/|lines|agendab|
+#0|^\\~|lines|agendab|
+0|^CLOG|lines|agendab|
+0|^XLOG|lines|agendax|
+0|^YLOG|lines|agenday|
+0|^ZLOG|lines|agendab|
+0|^2010-.. |lines|agendaz|
+0|^2011-.. |lines|agendaz|

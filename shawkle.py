@@ -181,7 +181,7 @@ if __name__ == "__main__":
      [7, '=2', 'HUH.txt', 'calendar.txt', ''],
      [1, 'LATER', 'HUH.txt', 'LATER.txt', ''],
      [1, 'NOW', 'HUH.txt', 'NOW.txt', '']]
-    rules = getrules(['.ruleall', '.rules'])
+    rules = getrules(['/home/tbaker/u/scripts/PYFFLE/shawkle/.ruleall', '.rules'])
     databackup(listofdatafiles)
     datalines = ['2010-02 To be archived...\n',
      '=2010-02-15\n',
