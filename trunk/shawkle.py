@@ -7,6 +7,7 @@ import re
 import shutil
 import string
 import sys
+import datetime
 
 def datals():
     """Returns list of files in current directory, excluding dot files and subdirectories.
@@ -168,7 +169,43 @@ def datacleanup():
         if os.path.isfile(file):
             if os.path.getsize(file) == 0:
                 os.remove(file)
-                print 'Removing zero-length file:', file
+                # print 'Removing zero-length file:', file # MAYBE restore this
+
+def getfilemappings(filemappings):
+    mappingsraw = []
+    try:
+        mappings = open(filemappings, 'rU')
+        mappingsraw = mappings.readlines()
+    except:
+        print 'Mapping file', filemappings, 'does not exist - exiting...'
+        sys.exit()
+    mappings.close()
+    mappingsparsed = []
+    for line in mappingsraw:
+        linestripped = line.strip()
+        linedecommented = linestripped.partition('#')[0]
+        linewithouttrailingwhitespace = linedecommented.rstrip()
+        linesplitonorbar = linewithouttrailingwhitespace.split('|')
+        if len(linesplitonorbar) == 2:
+            mappingsparsed.append(linesplitonorbar)
+    return mappingsparsed
+
+def movefiles(filemappings):
+    timestamp = datetime.datetime.now()
+    prefix = timestamp.isoformat('.')
+    for line in filemappings:
+        filename = line[0]
+        dirpath = line[1]
+        timestampedpathname = dirpath + '/' + prefix[0:13] + prefix[14:16] + prefix[17:19] + '.' + filename
+        try:
+            shutil.move(filename, timestampedpathname)
+            print 'Moving', filename, 'to', timestampedpathname
+        except:
+            if os.path.exists(filename):
+                print 'Keeping', filename, 'where it is - directory', dirpath, 'does not exist...'
+            else:
+                #print 'File', filename, 'does not exist...' # MAYBE RESTORE THIS
+                pass
 
 if __name__ == "__main__":
     datacleanup()
@@ -237,4 +274,6 @@ if __name__ == "__main__":
         print 'Done: data shawkled and intact!'
     else:
         print 'Warning: data may have been lost - revert to backup!'
+    filemappings = getfilemappings('/home/tbaker/u/scripts/PYFFLE/shawkle/.filemappings')
+    movefiles(filemappings)
 

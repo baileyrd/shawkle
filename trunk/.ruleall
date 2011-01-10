@@ -1,14 +1,16 @@
-0|=2011|lines.tmp|agenda|
-2|^e:|lines.tmp|huh3|
-2|^irc:|lines.tmp|huh3|
-2|^http:|lines.tmp|huh3|
-0|.|huh3|lines|
+0|^=20|lines.tmp|agendaa|
+2|^e:|lines.tmp|huh.tmp|
+2|^irc:|lines.tmp|huh.tmp|
+2|^http:|lines.tmp|huh.tmp|
+0|.|huh.tmp|lines|
 0|.|lines.tmp|lines|
-0|^A |lines|agenda|
+0|^A |lines|agendaa|
 0|^__|lines|agendab|
 0|^B |lines|agendab|
 0|^N |lines|agendab|
 0|^C |lines|agendab|
+0|^/|lines|agendab|
+0|^~|lines|agendab|
 0|^CLOG|lines|agendab|
 0|^ZLOG|lines|agendab|
 0|^XLOG|lines|agendax|
