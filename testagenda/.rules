@@ -1,0 +1,7 @@
+0|.|agendaa|lines.txt|
+1|^=2|lines.txt|calendar.txt|
+1|LATER|lines.txt|later.txt|
+1|NOW|lines.txt|now.txt|
+1|DEMO|lines.txt|demo.txt|
+1|README|lines.txt|README.txt|
+0|^A |lines.txt|a-lines.txt|

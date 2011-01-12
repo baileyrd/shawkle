@@ -1,0 +1,2 @@
+agendaa|../testagenda    # This file has the same content as ../testagenda/.filemappings.
+agendab|../testagendab   # shawkle.py could be edited to replace '.filemappings' with an absolute pathname.

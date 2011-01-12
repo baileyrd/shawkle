@@ -1,0 +1,11 @@
+DEMO 01 Before running the demo, cd to this directory and read '.filemappings', '.arules', and '.rules'.
+DEMO 02 To run the demo, execute: ../shawkle.py.
+DEMO 03 After execution, compare the resulting files with the files in the directory '.backup'.
+DEMO 04 In the demo, this file starts out being called 'README.txt'; it has just TEN lines.
+DEMO 05 After running shawkle, these lines starting in '^A ' will stay in ./testagenda and end up in 'a-lines.txt'.
+DEMO 06 A new 'README.txt' will be created by the rules.
+DEMO 07 If shawkle.py is run first in ../testagenda, then ../testagendab, then ../testagenda again,
+DEMO 08 then the file 'a-lines.txt' will end up having ELEVEN lines.
+DEMO 09 Hint: edit this file ('a-lines.txt') removing the 'A ' at the start of each line. Run shawkle.py again.
+DEMO 10 The file will then be called 'demo.txt'!  See the rules...
+This line, originally in ../testagendab, is moved to ../testagenda if shawkle is run in ../testagendab
