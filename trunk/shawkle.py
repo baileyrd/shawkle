@@ -2,16 +2,11 @@
 
 from __future__ import division
 from __future__ import with_statement
-import os
-import re
-import shutil
-import string
-import sys
-import datetime
+import os, re, shutil, string, sys, datetime
 
 def datals():
     """Returns list of files in current directory, excluding dot files and subdirectories.
-        Ends program with error message on encountering a file ending in .swp."""
+        If a swap file (extension .swp) is encountered, exits with error message."""
     filelist = []
     pathnamelist = os.listdir(os.getcwd())
     for pathname in pathnamelist:
@@ -24,7 +19,8 @@ def datals():
     return filelist
 
 def databackup(filelist):
-    """Backs up list of files in $PWD to ".backup", bumping previous to ".backupi", ".backupii", ".backupiii"."""
+    """Bumps previous backups from directory "$PWD/.backup" to ".backupi", ".backupii", and ".backupiii".
+    Backs up given list of files to directory "$PWD.backup"."""
     if not filelist:
         print 'No data here to back up, or process... - exiting...'
         sys.exit()
@@ -41,19 +37,17 @@ def databackup(filelist):
     print 'Moving directory', backupdirs[0], "to", backupdirs[1]
     shutil.move(backupdirs[0], backupdirs[1])
     os.mkdir(backupdirs[0])
-    #2011-01-01: will move files to .backup only in slurpdata() function now
-    #for file in filelist:
-    #    print 'Copying file', file, "to", backupdirs[0]
-    #    shutil.copy2(file, backupdirs[0])
 
 def totalsize():
+    """Returns total size in bytes of files in current directory,
+    removing files of length zero."""
     totalsize = 0
     listoffiles = os.listdir(os.getcwd())
     for file in listoffiles:
         if os.path.isfile(file):
             filesize = os.path.getsize(file)
             if filesize == 0:
-                # print 'Removing zero-length file:', file # MAYBE RESTORE THIS
+                print 'Removing zero-length file:', file
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -61,6 +55,8 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
+    """First tests whether all files in a given list of files are readable and contain no blank lines.
+    If so, returns a consolidated, sorted list of lines from all files."""
     alldatalines = []
     for file in datafileslisted:
         try:
@@ -104,9 +100,10 @@ def ckthatfilesaretext(datafiles):
             sys.exit()
 
 def getrules(listofrulefiles):
-    """Makes a consolidated list of rules, each rule itself a list of components.
-        Argument: list of rule files (if only a list of just one item).
-        Parses raw rules into fields, deleting comments and blank lines."""
+    """Argument is a list of rule files - if only a list with just one file.
+    Parses raw rules into fields, deleting comments and blank lines.
+    Performs various sanity checks on rules.
+    Returns a consolidated list of rules, each rule itself a list of components."""
     listofrulesraw = []
     for file in listofrulefiles:
         try:
@@ -163,15 +160,10 @@ def getrules(listofrulefiles):
         count = count + 1
     return listofrulesparsed
 
-def datacleanup():
-    listofpathnames = os.listdir(os.getcwd())
-    for file in listofpathnames:
-        if os.path.isfile(file):
-            if os.path.getsize(file) == 0:
-                os.remove(file)
-                # print 'Removing zero-length file:', file # MAYBE restore this
-
 def getfilemappings(filemappings):
+    """Parses given file containing mappings of filenames to target directories.
+    Strips comments, commented lines, and blank lines.
+    Returns list of mappings."""
     mappingsraw = []
     try:
         mappings = open(filemappings, 'rU')
@@ -191,6 +183,9 @@ def getfilemappings(filemappings):
     return mappingsparsed
 
 def movefiles(filemappings):
+    """Takes as argument the list of mappings of filenames to target directories.
+    If file and directory both exist, moves file to directory.
+    If file exists but not the target directory, reports that file is staying where it is."""
     timestamp = datetime.datetime.now()
     prefix = timestamp.isoformat('.')
     for line in filemappings:
@@ -202,36 +197,15 @@ def movefiles(filemappings):
             print 'Moving', filename, 'to', timestampedpathname
         except:
             if os.path.exists(filename):
-                print 'Keeping', filename, 'where it is - directory', dirpath, 'does not exist...'
-            else:
-                #print 'File', filename, 'does not exist...' # MAYBE RESTORE THIS
-                pass
+                print 'Keeping file', filename, 'where it is - directory', dirpath, 'does not exist...'
 
-if __name__ == "__main__":
-    datacleanup()
-    listofdatafiles = datals()
-    ckthatfilesaretext(listofdatafiles)
-    sizebefore = totalsize()
-    rules = [[0, '^2010-', 'aaa.txt', '2010.txt', ''],
-     [0, '^A ', 'aaa.txt', 'agendaa.txt', ''],
-     [0, '.', 'aaa.txt', 'HUH.txt', ''],
-     [7, '=2', 'HUH.txt', 'calendar.txt', ''],
-     [1, 'LATER', 'HUH.txt', 'LATER.txt', ''],
-     [1, 'NOW', 'HUH.txt', 'NOW.txt', '']]
-    rules = getrules(['/home/tbaker/u/scripts/PYFFLE/shawkle/.ruleall', '.rules'])
-    databackup(listofdatafiles)
-    datalines = ['2010-02 To be archived...\n',
-     '=2010-02-15\n',
-     '=2010-02-15 Tue 1400 TELECON\n',
-     '=2010-02-15 Tue 1900 RDF2 http://decentralyze.com/2009/10/30/rdf-2-wishlist/\n',
-     '=2010-02-17 Wed 0800 TELECON\n',
-     '=2010-08-24 Tue 0800 TELECON\n',
-     'A LATER Belongs in agendaa\n',
-     'LATER Haircut\n',
-     'LATER http://www.asis.org/\n',
-     'NOW Buy milk\n',
-     'NOW Shovel snow\n']
-    datalines = slurpdata(listofdatafiles)
+def shuffle(rules, datalines):
+    """Takes as arguments a list of rules and a list of data lines.
+    For first rule, writes data lines matching (or not) a regular expression to the 
+    target (or source) file.
+    For each subsequent rule, reads data lines from source file, writes lines 
+    matching (or not) a regular expression to the target (or source) file, overwriting
+    the source file."""
     rulenumber = 0
     for rule in rules:
         rulenumber += 1
@@ -266,14 +240,28 @@ if __name__ == "__main__":
                         sfile.write(line)
         sfile.close()
         tfile.close()
-    datacleanup()
-    sizeafter = totalsize()
-    print 'Size before is', sizebefore
-    print 'Size after is', sizeafter
+
+def comparesize(sizebefore, sizeafter):
+    """Compares the aggregate size in bytes of files before and after the shuffle operation.
+    Reports size before and size after.
+    Reports if sizes are the same or warns if sizes are different."""
+    print 'Size pre was', sizebefore
+    print 'Size post is', sizeafter
     if sizebefore == sizeafter:
         print 'Done: data shawkled and intact!'
     else:
         print 'Warning: data may have been lost - revert to backup!'
-    filemappings = getfilemappings('/home/tbaker/u/scripts/PYFFLE/shawkle/.filemappings')
+
+if __name__ == "__main__":
+    listofdatafiles = datals()
+    ckthatfilesaretext(listofdatafiles)
+    sizebefore = totalsize()
+    rules = getrules(['.arules', '.rules'])
+    databackup(listofdatafiles)
+    datalines = slurpdata(listofdatafiles)
+    shuffle(rules, datalines)
+    sizeafter = totalsize()
+    comparesize(sizebefore, sizeafter)
+    filemappings = getfilemappings('.filemappings')
     movefiles(filemappings)
 

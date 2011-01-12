@@ -1,0 +1,6 @@
+LATER Haircut
+README A new README.txt file will be created with this line when shawkle.py is run.
+NOW Call David
+NOW http://www.w3.org/2005/Incubator/lld/wiki/Cluster_VocAlign
+=2010-02-17 Wed 0800 TELECON
+=2010-02-15 Tue 1900 RDF2 http://decentralyze.com/2009/10/30/rdf-2-wishlist/
