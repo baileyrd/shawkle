@@ -14,6 +14,9 @@ def datals():
             if pathname[-3:] == "swp":
                 print 'Detected swap file', pathname, '- which should be closed before proceeding - exiting...'
                 sys.exit()
+            if pathname[-1] == "~":
+                print 'Detected temporary file', pathname, '- which should be closed before proceeding - exiting...'
+                sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
     return filelist
