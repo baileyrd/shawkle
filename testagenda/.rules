@@ -4,4 +4,5 @@
 1|NOW|lines.txt|now.txt|
 1|DEMO|lines.txt|demo.txt|
 1|README|lines.txt|README.txt|
+1|_CLOUD|lines.txt|_cloud|
 0|^A |lines.txt|a-lines.txt|
