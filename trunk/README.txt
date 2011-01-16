@@ -1,5 +1,7 @@
 Shawkle: Gettings Things Done with rule-based processing of plain-text lists
 
+Last updated: 2011-01-16 (see below)
+
 This Python script is designed to process plain-text files,
 composed of "lines" of screen width (e.g., 120 columns), by
 automatically moving the lines between different files based
@@ -126,11 +128,38 @@ could be "URLified" as
 
 to make it usable in my Web browser.
 
-
-
 Tom Baker <tbaker@tbaker.de>, 12 January 2011
 
 [1] http://web.bilkent.edu.tr/Online/uworld/archives/94/grabbag/06.txt.html
 [2] http://lifehacker.com/217063/getting-things-done-with-rule+based-list-processing 
 [3] http://code.google.com/p/shawkle/
 [4] http://shawkle.googlecode.com/svn/trunk
+
+----------------------------------------------------------------------
+Update 2011-01-16
+
+Added expanded version of shawkle.py -- shawkle2.py.  This adds
+additional functions to "urlify" the text files as HTML Web pages.
+For example, from
+
+    a.txt
+    b.txt
+
+it creates
+
+    .html/a.txt.html
+    .html/b.txt.html
+
+...HTML files that can be bookmarked in a browser, with clickable
+links.  Note that the urlify algorithm inserts blank lines between
+lines that have different strings in the "field 1" position.  It 
+also provides allows one to designate a "cloud" file, the links of 
+which will be pre-pended to all generated HTML files.
+
+To see how this works, run the demo, then examine
+
+    .html/now.txt.html
+    .html/later.txt.html
+
+
+

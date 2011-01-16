@@ -1,0 +1,12 @@
+e:/|file://localhost/e:/
+#c:/|file://localhost/c:/
+#d:/|file://localhost/d:/
+#g:/|file://localhost/g:/
+#i:/|file://localhost/i:/
+#/cygdrive/c|file://localhost/c:
+/home/tbaker|file://localhost/e:
+#/cygdrive/d|file://localhost/d:
+#/cygdrive/g|file://localhost/g:
+#/cygdrive/i|file://localhost/i:
+>|&gt;
+<|&lt;
