@@ -22,8 +22,8 @@ def datals():
     return filelist
 
 def databackup(filelist):
-    """Backs up the given list of files to directory "$PWD/.backup", 
-    bumping previous backups to ".backupi", ".backupii", and ".backupiii"."""
+    """Bumps previous backups from directory "$PWD/.backup" to ".backupi", ".backupii", and ".backupiii".
+    Backs up given list of files to directory "$PWD.backup"."""
     if not filelist:
         print 'No data here to back up, or process... - exiting...'
         sys.exit()
@@ -43,7 +43,7 @@ def databackup(filelist):
 
 def totalsize():
     """Returns total size in bytes of files in current directory,
-    verbosely removing files of length zero."""
+    removing files of length zero."""
     totalsize = 0
     listoffiles = os.listdir(os.getcwd())
     for file in listoffiles:
@@ -58,9 +58,8 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
-    """If all files in the given list are readable and contain no blank lines.
-    returns a consolidated, sorted list of lines from all files.
-    Otherwise, exits with helpful error message."""
+    """First tests whether all files in a given list of files are readable and contain no blank lines.
+    If so, returns a consolidated, sorted list of lines from all files."""
     alldatalines = []
     for file in datafileslisted:
         try:
@@ -85,8 +84,7 @@ def slurpdata(datafileslisted):
     return alldatalines
 
 def ckthatfilesaretext(datafiles):
-    """Tests whether a file consists of text and exits if not.
-    Based on O'Reilly Python Cookbook, p.25."""
+    """Tests whether a file consists of text; exits if not - based on Python Cookbook, p.25."""
     for file in datafiles:
         givenstring = open(file).read(512)
         text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
@@ -105,10 +103,10 @@ def ckthatfilesaretext(datafiles):
             sys.exit()
 
 def getrules(listofrulefiles):
-    """For each file in the list of rule files (if only a list with just one file):
-        Parses raw rules into fields, deleting comments and blank lines.
-        Performs various sanity checks on rules.
-        Returns a consolidated list of rules, each item itself a list of components."""
+    """Argument is a list of rule files - if only a list with just one file.
+    Parses raw rules into fields, deleting comments and blank lines.
+    Performs various sanity checks on rules.
+    Returns a consolidated list of rules, each rule itself a list of components."""
     listofrulesraw = []
     for file in listofrulefiles:
         try:
@@ -175,13 +173,8 @@ def getrules(listofrulefiles):
     return listofrulesparsed
 
 def getmappings(mappings):
-    """Parses the given file, the lines of which consist of: 
-        the name of a file
-        a vertical bar
-        the name of directory where the named file belongs ("target directory").
-    Strips comments, commented lines, and blank lines.
-    Ignores lines with more than two vertical-bar-delimited fields.
-    Returns list, each item of which is a list of two items ."""
+    """Parses given file, stripping comments, commented lines, and blank lines.
+    Returns list of lists."""
     mappingsraw = []
     try:
         mappings = open(mappings, 'rU')
@@ -201,9 +194,9 @@ def getmappings(mappings):
     return mappingsparsed
 
 def movefiles(filemappings):
-    """Given the list of mappings of filenames to target directories:
-        if file and directory both exist, moves file to directory,
-        if file exists but not the target directory, reports that the file is staying put."""
+    """Takes as argument the list of mappings of filenames to target directories.
+    If file and directory both exist, moves file to directory.
+    If file exists but not the target directory, reports that file is staying where it is."""
     timestamp = datetime.datetime.now()
     prefix = timestamp.isoformat('.')
     for line in filemappings:
@@ -219,13 +212,11 @@ def movefiles(filemappings):
 
 def shuffle(rules, datalines):
     """Takes as arguments a list of rules and a list of data lines.
-    For the first rule only: 
-        writes data lines matching a regular expression to the target file,
-        writes data lines not matching a regular expression to the source file.
-    For each subsequent rule: 
-        reads data lines from source file, 
-        writes lines matching a regular expression to the target file, 
-        writes lines not matching a regular expression to the source file, overwriting the source file."""
+    For first rule, writes data lines matching (or not) a regular expression to the 
+    target (or source) file.
+    For each subsequent rule, reads data lines from source file, writes lines 
+    matching (or not) a regular expression to the target (or source) file, overwriting
+    the source file."""
     rulenumber = 0
     for rule in rules:
         rulenumber += 1
@@ -272,9 +263,9 @@ def shuffle(rules, datalines):
         tfile.close()
 
 def comparesize(sizebefore, sizeafter):
-    """Given the aggregate size in bytes of files "before" and "after":
-        reports if sizes are the same, or
-        warns if sizes are different."""
+    """Compares the aggregate size in bytes of files before and after the shuffle operation.
+    Reports size before and size after.
+    Reports if sizes are the same or warns if sizes are different."""
     print 'Size pre was', sizebefore
     print 'Size post is', sizeafter
     if sizebefore == sizeafter:
@@ -283,10 +274,7 @@ def comparesize(sizebefore, sizeafter):
         print 'Warning: data may have been lost - revert to backup!'
 
 def urlify_string(s):
-    """Puts HTML links around a URL, i.e., a string ("s") starting
-    with "http", "file", or "irc", etc.
-    This code, found on Web, appears to be based on Perl Cookbook, section 6.21 ("urlify")."""
-    urls = r'(http|https|telnet|gopher|file|wais|ftp|irc)'
+    urls = r'(http|telnet|gopher|file|wais|ftp)'
     ltrs = r'\w';
     gunk = r'/#~:.?+=&%@!\-'
     punc = r'.:?\-'
@@ -310,10 +298,9 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 def urlify(listofdatafiles, pathmappings, pathprettify, htmldir, cloudfile):
-    """For each file in list of files ("listofdatafiles"): 
-        create a urlified (HTML) file in the specified directory ("htmldir"), 
-        starting each file with the contents of an optional "cloud file" ("cloudfile"),
-        using list of string transformations such as drive letters to URI prefixes ("pathprettify")."""
+    """For each file in list of files, turn create a urlified (HTML) file
+    in the specified, starting each file with the contents of an optional 
+    "cloud file", if desired."""
     cloudfilelines = []
     if os.path.isfile(cloudfile):
         cloudfile = open(cloudfile, 'r')
@@ -373,8 +360,6 @@ def urlify(listofdatafiles, pathmappings, pathprettify, htmldir, cloudfile):
         openfilehtml.close()
 
 def dsusort(dlines, field):
-    """Given a list of datalines (list "dlines"):
-        returns list sorted by given field (greater-than-zero integer "field")."""
     intfield = int(field)
     ethfield = intfield - 1
     dlinesdecorated = []

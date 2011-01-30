@@ -1,6 +1,6 @@
 Shawkle: Gettings Things Done with rule-based processing of plain-text lists
 
-Last updated: 2011-01-16 (see below)
+Updated: 2011-01-24
 
 This Python script is designed to process plain-text files,
 composed of "lines" of screen width (e.g., 120 columns), by
@@ -134,9 +134,6 @@ Tom Baker <tbaker@tbaker.de>, 12 January 2011
 [2] http://lifehacker.com/217063/getting-things-done-with-rule+based-list-processing 
 [3] http://code.google.com/p/shawkle/
 [4] http://shawkle.googlecode.com/svn/trunk
-
-----------------------------------------------------------------------
-Update 2011-01-16
 
 Added expanded version of shawkle.py -- shawkle2.py.  This adds
 additional functions to "urlify" the text files as HTML Web pages.
