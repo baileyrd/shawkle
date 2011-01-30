@@ -1,0 +1,109 @@
+132a133,141
+>             if len(linesplitonorbar[4]) > 0:
+>                 if not linesplitonorbar[4].isdigit():
+>                     print linesplitonorbar
+>                     print 'Fifth field must be an integer or zero-length string - exiting...'
+>                     sys.exit()
+>             if linesplitonorbar[4] < 1:
+>                 print linesplitonorbar
+>                 print 'Fifth field integer must be greater than zero - exiting...'
+>                 sys.exit()
+218c227,231
+<         print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
+---
+>         sortorder = rule[4]
+>         if sortorder:
+>             print '%s [%s] "%s" to "%s", sorted by field %s' % (field, searchkey, source, target, sortorder)
+>         else:
+>             print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
+225,226c238,239
+<         sfile = open(source, 'w')
+<         tfile = open(target, 'a')
+---
+>         targetlines =  []
+>         sourcelines =  []
+229c242
+<                 tfile.writelines([ line for line in data ])
+---
+>                 targetlines = [ line for line in data ]
+231,232c244,245
+<                 sfile.writelines([ line for line in data if not re.search(searchkey, line) ])
+<                 tfile.writelines([ line for line in data if re.search(searchkey, line) ])
+---
+>                 sourcelines = [ line for line in data if not re.search(searchkey, line) ]
+>                 targetlines = [ line for line in data if re.search(searchkey, line) ]
+237c250
+<                     sfile.write(line)
+---
+>                     sourcelines.append(line)
+240c253
+<                         tfile.write(line)
+---
+>                         targetlines.append(line)
+242c255,261
+<                         sfile.write(line)
+---
+>                         sourcelines.append(line)
+>         if sortorder:
+>             targetlines = dsusort(targetlines, sortorder)
+>         sfile = open(source, 'w')
+>         tfile = open(target, 'a')
+>         sfile.writelines(sourcelines)
+>         tfile.writelines(targetlines)
+342a362,378
+> def dsusort(dlines, field):
+>     intfield = int(field)
+>     ethfield = intfield - 1
+>     dlinesdecorated = []
+>     for line in dlines:
+>         linelength = len(line.split())
+>         if intfield > linelength:
+>             fieldsought = ''
+>         else:
+>             fieldsought = line.split()[ethfield]
+>         decoratedline = (fieldsought, line)
+>         dlinesdecorated.append(decoratedline)
+>     dlinesdecorated.sort()
+>     dlinessorted = []
+>     dlinessorted = [ t[1] for t in dlinesdecorated ]
+>     return dlinessorted
+> 
+343a380,392
+>     # -------------------------------------------   Filename assignments to customize
+>     #cloud = '_cloud'                                           # Demo (relative path - customize as desired)
+>     #cloud = ''                                                 # Demo (if a "cloud" file is not desired)
+>     #allrulesfile = '.arules'                                   # Demo (relative path - customize as desired)
+>     #filemappingsfile = '.filemappings'                         # Demo (relative path - customize as desired)
+>     #pathmappingsfile = '.pathmappings'                         # Demo (relative path - customize as desired)
+>     #pathprettifyfile = '.pathprettify'                         # Demo (relative path - customize as desired)
+>     cloud = '/home/tbaker/u/agenda/_cloud'                     # Tom's (absolute path)
+>     allrulesfile = '/home/tbaker/u/agenda/.arules'             # Tom's (absolute path)
+>     filemappingsfile = '/home/tbaker/u/agenda/.filemappings'   # Tom's (absolute path)
+>     pathmappingsfile = '/home/tbaker/u/agenda/.pathmappings'   # Tom's (absolute path)
+>     pathprettifyfile = '/home/tbaker/u/agenda/.pathprettify'   # Tom's (absolute path)
+>     # -------------------------------------------------------------  Shawkle algorithm
+347,348c396
+<     #rules = getrules(['.arules', '.rules'])                        # Demo rules
+<     rules = getrules(['/home/tbaker/u/agenda/.arules', '.rules']) # Tom's rules
+---
+>     rules = getrules([allrulesfile, '.rules'])
+353,356c401,402
+<     comparesize(sizebefore, sizeafter)
+<     #filemappings = getmappings('.filemappings')                        # Demo filemappings
+<     filemappings = getmappings('/home/tbaker/u/agenda/.filemappings') # Tom's filemappings
+<     movefiles(filemappings)
+---
+>     filesanddestinations = getmappings(filemappingsfile)
+>     movefiles(filesanddestinations)
+358,363c404,407
+<     #pathmappings = getmappings('.pathmappings')                        # Demo path mappings
+<     pathmappings = getmappings('/home/tbaker/u/agenda/.pathmappings') # Tom's path mappings
+<     #pathprettify = getmappings('.pathprettify')                        # Demo prettifier mappings
+<     pathprettify = getmappings('/home/tbaker/u/agenda/.pathprettify') # Tom's prettifier mappings
+<     #urlify(datafilesafter, pathmappings, pathprettify, '.html', '_cloud')                        # Demo
+<     urlify(datafilesafter, pathmappings, pathprettify, '.html', '/home/tbaker/u/agenda/_cloud') # Tom's
+---
+>     pathmappings = getmappings(pathmappingsfile)
+>     pathprettify = getmappings(pathprettifyfile)
+>     urlify(datafilesafter, pathmappings, pathprettify, '.html', cloud)
+>     comparesize(sizebefore, sizeafter)

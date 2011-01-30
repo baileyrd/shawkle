@@ -344,21 +344,21 @@ if __name__ == "__main__":
     sizebefore = totalsize()
     datafilesbefore = datals()
     ckthatfilesaretext(datafilesbefore)
-    rules = getrules(['.arules', '.rules'])                        # Demo rules
-    #rules = getrules(['/home/tbaker/u/agenda/.arules', '.rules']) # Tom's rules
+    #rules = getrules(['.arules', '.rules'])                        # Demo rules
+    rules = getrules(['/home/tbaker/u/agenda/.arules', '.rules']) # Tom's rules
     databackup(datafilesbefore)
     datalines = slurpdata(datafilesbefore)
     shuffle(rules, datalines)
     sizeafter = totalsize()
     comparesize(sizebefore, sizeafter)
-    filemappings = getmappings('.filemappings')                        # Demo filemappings
-    #filemappings = getmappings('/home/tbaker/u/agenda/.filemappings') # Tom's filemappings
+    #filemappings = getmappings('.filemappings')                        # Demo filemappings
+    filemappings = getmappings('/home/tbaker/u/agenda/.filemappings') # Tom's filemappings
     movefiles(filemappings)
     datafilesafter = datals()
-    pathmappings = getmappings('.pathmappings')                        # Demo path mappings
-    #pathmappings = getmappings('/home/tbaker/u/agenda/.pathmappings') # Tom's path mappings
-    pathprettify = getmappings('.pathprettify')                        # Demo prettifier mappings
-    #pathprettify = getmappings('/home/tbaker/u/agenda/.pathprettify') # Tom's prettifier mappings
-    urlify(datafilesafter, pathmappings, pathprettify, '.html', '_cloud')                        # Demo
-    #urlify(datafilesafter, pathmappings, pathprettify, '.html', '/home/tbaker/u/agenda/_cloud') # Tom's
+    #pathmappings = getmappings('.pathmappings')                        # Demo path mappings
+    pathmappings = getmappings('/home/tbaker/u/agenda/.pathmappings') # Tom's path mappings
+    #pathprettify = getmappings('.pathprettify')                        # Demo prettifier mappings
+    pathprettify = getmappings('/home/tbaker/u/agenda/.pathprettify') # Tom's prettifier mappings
+    #urlify(datafilesafter, pathmappings, pathprettify, '.html', '_cloud')                        # Demo
+    urlify(datafilesafter, pathmappings, pathprettify, '.html', '/home/tbaker/u/agenda/_cloud') # Tom's
 
