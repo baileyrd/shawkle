@@ -200,13 +200,13 @@ def getmappings(mappings):
             mappingsparsed.append(linesplitonorbar)
     return mappingsparsed
 
-def movefiles(filemappings):
+def movefiles(files2dirs):
     """Given the list of mappings of filenames to target directories:
         if file and directory both exist, moves file to directory,
         if file exists but not the target directory, reports that the file is staying put."""
     timestamp = datetime.datetime.now()
     prefix = timestamp.isoformat('.')
-    for line in filemappings:
+    for line in files2dirs:
         filename = line[0]
         dirpath = line[1]
         timestampedpathname = dirpath + '/' + prefix[0:13] + prefix[14:16] + prefix[17:19] + '.' + filename
@@ -309,11 +309,11 @@ def urlify_string(s):
     """%locals(), re.VERBOSE | re.IGNORECASE)
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
-def urlify(listofdatafiles, pathmappings, pathprettify, htmldir, cloudfile):
+def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloudfile):
     """For each file in list of files ("listofdatafiles"): 
         create a urlified (HTML) file in the specified directory ("htmldir"), 
         starting each file with the contents of an optional "cloud file" ("cloudfile"),
-        using list of string transformations such as drive letters to URI prefixes ("pathprettify")."""
+        using list of string transformations such as drive letters to URI prefixes ("sedhtml")."""
     cloudfilelines = []
     if os.path.isfile(cloudfile):
         cloudfile = open(cloudfile, 'r')
@@ -341,12 +341,12 @@ def urlify(listofdatafiles, pathmappings, pathprettify, htmldir, cloudfile):
         openfile.close()
         urlifiedlines = []
         for line in openfilelines:
-            for pathmap in pathmappings:
-                old = pathmap[0]
-                new = pathmap[1]
+            for sedmap in sedtxt:
+                old = sedmap[0]
+                new = sedmap[1]
                 line = line.replace(old, new)
             line = urlify_string(line)
-            for visualimprovement in pathprettify:
+            for visualimprovement in sedhtml:
                 ugly = visualimprovement[0]
                 pretty = visualimprovement[1]
                 line = line.replace(ugly, pretty)
@@ -395,15 +395,15 @@ if __name__ == "__main__":
     # -------------------------------------------   Filename assignments to customize
     #cloud = '_cloud'                                           # Demo (relative path - customize as desired)
     #cloud = ''                                                 # Demo (if a "cloud" file is not desired)
-    #allrulesfile = '.arules'                                   # Demo (relative path - customize as desired)
-    #filemappingsfile = '.filemappings'                         # Demo (relative path - customize as desired)
-    #pathmappingsfile = '.pathmappings'                         # Demo (relative path - customize as desired)
-    #pathprettifyfile = '.pathprettify'                         # Demo (relative path - customize as desired)
-    cloud = '/home/tbaker/u/agenda/_cloud'                     # Tom's (absolute path)
-    allrulesfile = '/home/tbaker/u/agenda/.arules'             # Tom's (absolute path)
-    filemappingsfile = '/home/tbaker/u/agenda/.filemappings'   # Tom's (absolute path)
-    pathmappingsfile = '/home/tbaker/u/agenda/.pathmappings'   # Tom's (absolute path)
-    pathprettifyfile = '/home/tbaker/u/agenda/.pathprettify'   # Tom's (absolute path)
+    #allrulesfile = '.globalrules'                                   # Demo (relative path - customize as desired)
+    #files2dirsfile = '.files2dirs'                         # Demo (relative path - customize as desired)
+    #sedtxtfile = '.sedtxt'                         # Demo (relative path - customize as desired)
+    #sedhtmlfile = '.sedhtml'                         # Demo (relative path - customize as desired)
+    cloud = '/home/tbaker/u/agendab/__cloud'                    # Tom's (absolute path)
+    allrulesfile = '/home/tbaker/u/agenda/.globalrules'             # Tom's (absolute path)
+    files2dirsfile = '/home/tbaker/u/agenda/.files2dirs'   # Tom's (absolute path)
+    sedtxtfile = '/home/tbaker/u/agenda/.sedtxt'   # Tom's (absolute path)
+    sedhtmlfile = '/home/tbaker/u/agenda/.sedhtml'   # Tom's (absolute path)
     # -------------------------------------------------------------  Shawkle algorithm
     sizebefore = totalsize()
     datafilesbefore = datals()
@@ -413,11 +413,11 @@ if __name__ == "__main__":
     datalines = slurpdata(datafilesbefore)
     shuffle(rules, datalines)
     sizeafter = totalsize()
-    filesanddestinations = getmappings(filemappingsfile)
+    filesanddestinations = getmappings(files2dirsfile)
     movefiles(filesanddestinations)
     datafilesafter = datals()
-    pathmappings = getmappings(pathmappingsfile)
-    pathprettify = getmappings(pathprettifyfile)
-    urlify(datafilesafter, pathmappings, pathprettify, '.html', cloud)
+    sedtxt = getmappings(sedtxtfile)
+    sedhtml = getmappings(sedhtmlfile)
+    urlify(datafilesafter, sedtxt, sedhtml, '.html', cloud)
     comparesize(sizebefore, sizeafter)
 
