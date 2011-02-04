@@ -1,6 +1,0 @@
-0|^=20|lines.tmp|agendaa|    # This .arules has the same content as the one in ../testagenda
-2|^http:|lines.tmp|huh.tmp|  # To make both ../testagenda and ../testagendab refer to the same rules,
-0|.|huh.tmp|lines.txt|       # edit shawkle.py replacing '.arules' with an absolute pathname.
-0|.|lines.tmp|lines.txt|      
-0|^A |lines.txt|agendaa|
-0|^B |lines.txt|agendab|
