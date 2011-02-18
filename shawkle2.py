@@ -287,14 +287,20 @@ def shuffle(rules, datalines):
                         targetlines.append(line)
                     else:
                         sourcelines.append(line)
-        if sortorder:
-            targetlines = dsusort(targetlines, sortorder)
         sfile = open(source, 'w')
         tfile = open(target, 'a')
         sfile.writelines(sourcelines)
         tfile.writelines(targetlines)
         sfile.close()
         tfile.close()
+        if sortorder:
+            readonlytfile = open(target, 'r')
+            data = readonlytfile.readlines()
+            readonlytfile.close()
+            tfile = open(target, 'w')
+            targetlines = dsusort(data, sortorder)
+            tfile.writelines(targetlines)
+            tfile.close()
 
 def comparesize(sizebefore, sizeafter):
     """Given the aggregate size in bytes of files "before" and "after":
@@ -425,8 +431,6 @@ if __name__ == "__main__":
     #
     globalrulefile = arguments.globalrules
     localrulefile = arguments.localrules
-    print 'Global rule file is', globalrulefile
-    print 'Local rule file is', localrulefile
     rules = getrules(globalrulefile, localrulefile)
     #
     databackup(datafilesbefore)
@@ -435,19 +439,22 @@ if __name__ == "__main__":
     sizeafter = totalsize()
     #
     files2dirsfile = arguments.files2dirs
-    print 'File-to-directory mappings specified in', files2dirsfile
     filesanddestinations = getmappings(files2dirsfile)
     movefiles(filesanddestinations)
     #
     datafilesafter = datals()
     sedtxtfile = arguments.sedtxt
     sedhtmlfile = arguments.sedhtml
-    print 'Cleaning up lists before urlification according to', sedtxtfile
-    print 'Cleaning up urlified lists according to', sedhtmlfile
     sedtxtmappings = getmappings(sedtxtfile)
     sedhtmlmappings = getmappings(sedhtmlfile)
     cloudfile = arguments.cloud
-    if cloudfile != '': print 'Prepending to urlified files the cloud file', cloudfile
     urlify(datafilesafter, sedtxtmappings, sedhtmlmappings, '.html', cloudfile)
+    #
+    print "Used config file:", localrulefile, "- local rule file"
+    print "Used config file:", globalrulefile, "- global rule file"
+    print "Used config file:", files2dirsfile, "- files to directories"
+    print "Used config file:", sedtxtfile, "- stream-edits before urlification"
+    print "Used config file:", sedhtmlfile, "- stream-edits after urlification"
+    if cloudfile != '': print "Used config file:", cloudfile, "- prepended to each urlified file"
     comparesize(sizebefore, sizeafter)
 
