@@ -3,10 +3,34 @@
 from __future__ import division
 from __future__ import with_statement
 import os, re, shutil, string, sys, datetime
+import optparse
+
+def getoptions():
+    p = optparse.OptionParser(description="Shawkle - Rule-driven processor of plain-text lists",
+                              prog="shawkle.py", version="0.4", usage="%prog")
+    p.add_option("--cloud", action="store", type="string", dest="cloud",
+                help="file, contents of which to be prefixed to each urlified HTML file; default ''", default="")
+    p.add_option("--files2dirs", action="store", type="string", dest="files2dirs",
+                help="files with corresponding target directories; default './.files2dirs'",
+                default='.files2dirs')
+    p.add_option("--globalrules", action="store", type="string", dest="globalrules",
+                help="rules used globally (typically an absolute pathname), processed first; default '.globalrules'",
+                default='.globalrules')
+    p.add_option("--localrules", action="store", type="string", dest="localrules",
+                help="rules used locally (typically a relative pathname), processed second; default './.rules'",
+                default=".rules")
+    p.add_option("--sedtxt", action="store", type="string", dest="sedtxt",
+                help="stream edits for plain text, eg, expanding drive letters to URIs; default './.sedtxt'",
+                default=".sedtxt")
+    p.add_option("--sedhtml", action="store", type="string", dest="sedhtml",
+                help="stream edits for urlified HTML, eg, shortening visible pathnames; default './.sedhtml'",
+                default=".sedhtml")
+    ( options, arguments ) = p.parse_args()
+    return options
 
 def datals():
     """Returns list of files in current directory, excluding dot files and subdirectories.
-        If a swap file (extension .swp) is encountered, exits with error message."""
+        If swap files, backup files, or non-text files are encountered, exits with error message."""
     filelist = []
     pathnamelist = os.listdir(os.getcwd())
     for pathname in pathnamelist:
@@ -19,6 +43,7 @@ def datals():
                 sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
+    ckthatfilesaretext(filelist)
     return filelist
 
 def databackup(filelist):
@@ -46,11 +71,13 @@ def totalsize():
     verbosely removing files of length zero."""
     totalsize = 0
     listoffiles = os.listdir(os.getcwd())
+    filesremoved = []
     for file in listoffiles:
         if os.path.isfile(file):
             filesize = os.path.getsize(file)
             if filesize == 0:
                 print 'Removing zero-length file:', file
+                filesremoved.append(file)
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -104,11 +131,13 @@ def ckthatfilesaretext(datafiles):
             print file, 'has more than 30% non-text characters and is therefore not a text file - exiting...'
             sys.exit()
 
-def getrules(listofrulefiles):
-    """For each file in the list of rule files (if only a list with just one file):
-        Parses raw rules into fields, deleting comments and blank lines.
-        Performs various sanity checks on rules.
-        Returns a consolidated list of rules, each item itself a list of components."""
+def getrules(globalrules, localrules):
+    """Consolidates the lines of raw global and local rule files into one list.
+    Deletes comments and blank lines.  Performs sanity checks to ensure well-formedness of rules.
+    Returns a consolidated list of rules, each item itself a list of rule components."""
+    globalrules = os.path.expanduser(globalrules)
+    localrules = os.path.expanduser(localrules)
+    listofrulefiles = [ str(globalrules), str(localrules) ]
     listofrulesraw = []
     for file in listofrulefiles:
         try:
@@ -120,6 +149,8 @@ def getrules(listofrulefiles):
             sys.exit()
         openrulefile.close()
     listofrulesparsed = []
+    print "Using config file:", localrules, "- local rule file"
+    print "Using config file:", globalrules, "- global rule file"
     for line in listofrulesraw:
         linestripped = line.strip()
         linedecommented = linestripped.partition('#')[0]
@@ -174,23 +205,24 @@ def getrules(listofrulefiles):
         count = count + 1
     return listofrulesparsed
 
-def getmappings(mappings):
-    """Parses the given file, the lines of which consist of: 
-        the name of a file
-        a vertical bar
-        the name of directory where the named file belongs ("target directory").
+def getmappings(mappings, helpmessage):
+    """Parses the given file, the lines are supposed to consist of two fields separated by a vertical bar.
     Strips comments, commented lines, and blank lines.
     Ignores lines with more than two vertical-bar-delimited fields.
     Returns list, each item of which is a list of two items ."""
+    helpmessage = str(helpmessage)
+    mappings = os.path.expanduser(mappings)
+    print "Using config file:", mappings, helpmessage
     mappingsraw = []
+    mappingsparsed = []
     try:
         mappings = open(mappings, 'rU')
         mappingsraw = mappings.readlines()
     except:
         print 'Mapping file', mappings, 'does not exist - exiting...'
-        sys.exit()
+        return mappingsparsed
+        #sys.exit()
     mappings.close()
-    mappingsparsed = []
     for line in mappingsraw:
         linestripped = line.strip()
         linedecommented = linestripped.partition('#')[0]
@@ -221,7 +253,7 @@ def shuffle(rules, datalines):
     """Takes as arguments a list of rules and a list of data lines.
     For the first rule only: 
         writes data lines matching a regular expression to the target file,
-        writes data lines not matching a regular expression to the source file.
+        writes data lines not matching the regular expression to the source file.
     For each subsequent rule: 
         reads data lines from source file, 
         writes lines matching a regular expression to the target file, 
@@ -262,14 +294,20 @@ def shuffle(rules, datalines):
                         targetlines.append(line)
                     else:
                         sourcelines.append(line)
-        if sortorder:
-            targetlines = dsusort(targetlines, sortorder)
         sfile = open(source, 'w')
         tfile = open(target, 'a')
         sfile.writelines(sourcelines)
         tfile.writelines(targetlines)
         sfile.close()
         tfile.close()
+        if sortorder:
+            readonlytfile = open(target, 'r')
+            data = readonlytfile.readlines()
+            readonlytfile.close()
+            tfile = open(target, 'w')
+            targetlines = dsusort(data, sortorder)
+            tfile.writelines(targetlines)
+            tfile.close()
 
 def comparesize(sizebefore, sizeafter):
     """Given the aggregate size in bytes of files "before" and "after":
@@ -309,15 +347,17 @@ def urlify_string(s):
     """%locals(), re.VERBOSE | re.IGNORECASE)
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
-def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloudfile):
-    """For each file in list of files ("listofdatafiles"): 
-        create a urlified (HTML) file in the specified directory ("htmldir"), 
-        starting each file with the contents of an optional "cloud file" ("cloudfile"),
-        using list of string transformations such as drive letters to URI prefixes ("sedhtml")."""
-    cloudfilelines = []
-    if os.path.isfile(cloudfile):
-        cloudfile = open(cloudfile, 'r')
-        cloudfilelines = cloudfile.readlines()
+def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
+    """For each file in list of files (listofdatafiles): 
+        create a urlified (HTML) file in the specified directory (htmldir), 
+        prepending the contents of an optional cloud file (cloud) to each urlified file,
+        optionally stream-editing the plain text using before-and-after transforms (sedtxt), and
+        optionally stream-editing the urlified text using before-and-after transforms (sedhtml)."""
+    cloud = os.path.expanduser(cloud)
+    cloudlines = []
+    if os.path.isfile(cloud):
+        cloudfile = open(cloud, 'r')
+        cloudlines = cloudfile.readlines()
         cloudfile.close()
     if not os.path.isdir(htmldir):
         print 'Creating directory', htmldir
@@ -330,11 +370,12 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloudfile):
         except:
             print 'Could not remove and re-create directory', htmldir
             sys.exit()
+    if cloud != '': print "Prepending file:", cloud, "to each urlified file"
     for file in listofdatafiles:
         try:
             openfile = open(file, 'r')
             openfilelines = openfile.readlines()
-            openfilelines = cloudfilelines + openfilelines
+            openfilelines = cloudlines + openfilelines
         except:
             print 'Cannot open', file, '- exiting...'
             sys.exit()
@@ -342,19 +383,25 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloudfile):
         urlifiedlines = []
         for line in openfilelines:
             for sedmap in sedtxt:
-                old = sedmap[0]
-                new = sedmap[1]
-                line = line.replace(old, new)
+                try:
+                    old = sedmap[0]
+                    new = sedmap[1]
+                    line = line.replace(old, new)
+                except:
+                    pass
             line = urlify_string(line)
             for visualimprovement in sedhtml:
-                ugly = visualimprovement[0]
-                pretty = visualimprovement[1]
-                line = line.replace(ugly, pretty)
+                try:
+                    ugly = visualimprovement[0]
+                    pretty = visualimprovement[1]
+                    line = line.replace(ugly, pretty)
+                except:
+                    pass
             urlifiedlines.append(line)
         filehtml = htmldir + '/' + file + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
-            print 'Creating', filehtml
+            print 'Creating urlified file', filehtml
         except:
             print 'Cannot open', filehtml, '- exiting...'
             sys.exit()
@@ -392,32 +439,20 @@ def dsusort(dlines, field):
     return dlinessorted
 
 if __name__ == "__main__":
-    # -------------------------------------------   Filename assignments to customize
-    #cloud = '_cloud'                                           # Demo (relative path - customize as desired)
-    #cloud = ''                                                 # Demo (if a "cloud" file is not desired)
-    #allrulesfile = '.globalrules'                                   # Demo (relative path - customize as desired)
-    #files2dirsfile = '.files2dirs'                         # Demo (relative path - customize as desired)
-    #sedtxtfile = '.sedtxt'                         # Demo (relative path - customize as desired)
-    #sedhtmlfile = '.sedhtml'                         # Demo (relative path - customize as desired)
-    cloud = '/home/tbaker/u/agendab/__cloud'                    # Tom's (absolute path)
-    allrulesfile = '/home/tbaker/u/agenda/.globalrules'             # Tom's (absolute path)
-    files2dirsfile = '/home/tbaker/u/agenda/.files2dirs'   # Tom's (absolute path)
-    sedtxtfile = '/home/tbaker/u/agenda/.sedtxt'   # Tom's (absolute path)
-    sedhtmlfile = '/home/tbaker/u/agenda/.sedhtml'   # Tom's (absolute path)
-    # -------------------------------------------------------------  Shawkle algorithm
+    arguments = getoptions()
+    rules = getrules(arguments.globalrules, arguments.localrules)
+    filesanddestinations = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
+    sedtxtmappings = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
+    sedhtmlmappings = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
+    optionalcloudfile = arguments.cloud
     sizebefore = totalsize()
     datafilesbefore = datals()
-    ckthatfilesaretext(datafilesbefore)
-    rules = getrules([allrulesfile, '.rules'])
     databackup(datafilesbefore)
     datalines = slurpdata(datafilesbefore)
     shuffle(rules, datalines)
     sizeafter = totalsize()
-    filesanddestinations = getmappings(files2dirsfile)
     movefiles(filesanddestinations)
-    datafilesafter = datals()
-    sedtxt = getmappings(sedtxtfile)
-    sedhtml = getmappings(sedhtmlfile)
-    urlify(datafilesafter, sedtxt, sedhtml, '.html', cloud)
+    datafilesaftermove = datals()
+    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 
