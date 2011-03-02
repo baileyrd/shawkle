@@ -163,6 +163,13 @@ def getrules(globalrules, localrules):
                 print linesplitonorbar
                 print 'First field must be an integer - exiting...'
                 sys.exit()
+            try:
+                re.compile(linesplitonorbar[1])
+            except:
+                print 'In rule:', linesplitonorbar
+                print '...in order to match the data string:', str(linesplitonorbar[1])
+                print '...the rule component must be escaped like this:', re.escape(linesplitonorbar[1])
+                sys.exit()
             if len(linesplitonorbar[4]) > 0:
                 if not linesplitonorbar[4].isdigit():
                     print linesplitonorbar
@@ -368,7 +375,7 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
             print 'Removing and re-creating directory', htmldir
             os.mkdir(htmldir)
         except:
-            print 'Could not remove and re-create directory', htmldir
+            print 'Could not remove and re-create directory', htmldir, '- HTML files are therefore out of date'
             sys.exit()
     if cloud != '': print "Prepending file:", cloud, "to each urlified file"
     for file in listofdatafiles:
