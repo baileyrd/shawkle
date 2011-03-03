@@ -463,20 +463,20 @@ def dsusort(dlines, field):
     return dlinessorted
 
 if __name__ == "__main__":
-    arguments = getoptions()
-    rules = getrules(arguments.globalrules, arguments.localrules)
-    filesanddestinations = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
-    sedtxtmappings = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
-    sedhtmlmappings = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
-    optionalcloudfile = arguments.cloud
-    sizebefore = totalsize()
-    datafilesbefore = datals()
+    arguments              = getoptions()
+    rules                  = getrules(arguments.globalrules, arguments.localrules)
+    filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
+    sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
+    sedhtmlmappings        = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
+    optionalcloudfile      = arguments.cloud
+    sizebefore             = totalsize()
+    datafilesbefore        = datals()
     databackup(datafilesbefore)
-    datalines = slurpdata(datafilesbefore)
+    datalines              = slurpdata(datafilesbefore)
     shuffle(rules, datalines)
-    sizeafter = totalsize()
+    sizeafter              = totalsize()
     movefiles(filesanddestinations)
-    datafilesaftermove = datals()
+    datafilesaftermove     = datals()
     urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 
