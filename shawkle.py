@@ -36,10 +36,10 @@ def datals():
     for pathname in pathnamelist:
         if os.path.isfile(pathname):
             if pathname[-3:] == "swp":
-                print 'Detected swap file', pathname, '- which should be closed before proceeding - exiting...'
+                print 'Detected swap file', repr(pathname), '- which should be closed before proceeding - exiting...'
                 sys.exit()
             if pathname[-1] == "~":
-                print 'Detected temporary file', pathname, 'which should be renamed or deleted - exiting...'
+                print 'Detected temporary file', repr(pathname), 'which should be renamed or deleted - exiting...'
                 sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
@@ -56,13 +56,13 @@ def databackup(filelist):
     for dir in backupdirs:
         if not os.path.isdir(dir):
             os.mkdir(dir)
-    print 'Deleting directory', backupdirs[3]
+    print 'Deleting directory', repr(backupdirs[3])
     shutil.rmtree(backupdirs[3])
-    print 'Moving directory', backupdirs[2], "to", backupdirs[3]
+    print 'Moving directory', repr(backupdirs[2]), "to", repr(backupdirs[3])
     shutil.move(backupdirs[2], backupdirs[3])
-    print 'Moving directory', backupdirs[1], "to", backupdirs[2]
+    print 'Moving directory', repr(backupdirs[1]), "to", repr(backupdirs[2])
     shutil.move(backupdirs[1], backupdirs[2])
-    print 'Moving directory', backupdirs[0], "to", backupdirs[1]
+    print 'Moving directory', repr(backupdirs[0]), "to", repr(backupdirs[1])
     shutil.move(backupdirs[0], backupdirs[1])
     os.mkdir(backupdirs[0])
 
@@ -76,7 +76,7 @@ def totalsize():
         if os.path.isfile(file):
             filesize = os.path.getsize(file)
             if filesize == 0:
-                print 'Removing zero-length file:', file
+                print 'Removing zero-length file:', repr(file)
                 filesremoved.append(file)
                 os.remove(file)
             else:
@@ -95,10 +95,10 @@ def slurpdata(datafileslisted):
             openfilelines = openfile.readlines()
             for line in openfilelines:
                 if len(line) == 1:
-                    print 'File', file, 'has blank lines - exiting...'
+                    print 'File', repr(file), 'has blank lines - exiting...'
                     sys.exit()
         except:
-            print 'Cannot open', file, '- exiting...'
+            print 'Cannot open', repr(file), '- exiting...'
             sys.exit()
         openfile.close()
     for file in datafileslisted:
@@ -119,7 +119,7 @@ def ckthatfilesaretext(datafiles):
         text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
         _null_trans = string.maketrans("", "")
         if "\0" in givenstring:     # if givenstring contains any null, it's not text
-            print file, 'contains a null and is therefore not a text file - exiting...'
+            print 'Data file:', repr(file), 'contains a null and is therefore not a text file - exiting...'
             sys.exit()
         if not givenstring:         # an "empty" string is "text" (arbitrary but reasonable choice)
             return True
@@ -128,7 +128,7 @@ def ckthatfilesaretext(datafiles):
         lengthgivenstring = len(givenstring)
         proportion = lengthsubstringwithnontextcharacters / lengthgivenstring
         if proportion >= 0.30: # s is 'text' if less than 30% of its characters are non-text ones
-            print file, 'has more than 30% non-text characters and is therefore not a text file - exiting...'
+            print 'Data file:', repr(file), 'has more than 30% non-text characters and is therefore not a text file - exiting...'
             sys.exit()
 
 def getrules(globalrules, localrules):
@@ -145,12 +145,12 @@ def getrules(globalrules, localrules):
             openrulefilelines = openrulefile.readlines()
             listofrulesraw.extend(openrulefilelines)
         except:
-            print 'Rule file', file, 'does not exist - exiting...'
+            print 'Rule file', repr(file), 'does not exist - exiting...'
             sys.exit()
         openrulefile.close()
     listofrulesparsed = []
-    print "Using config file:", localrules, "- local rule file"
-    print "Using config file:", globalrules, "- global rule file"
+    print "Using config file:", repr(globalrules), "- global rule file"
+    print "Using config file:", repr(localrules), "- local rule file"
     for line in listofrulesraw:
         linestripped = line.strip()
         linedecommented = linestripped.partition('#')[0]
@@ -160,23 +160,24 @@ def getrules(globalrules, localrules):
             try:
                 linesplitonorbar[0] = int(linesplitonorbar[0])
             except:
-                print linesplitonorbar
+                print repr(linesplitonorbar)
                 print 'First field must be an integer - exiting...'
                 sys.exit()
             try:
                 re.compile(linesplitonorbar[1])
             except:
-                print 'In rule:', linesplitonorbar
-                print '...in order to match the data string:', str(linesplitonorbar[1])
-                print '...the rule component must be escaped like this:', re.escape(linesplitonorbar[1])
+                print 'In rule:', repr(linesplitonorbar)
+                print '...in order to match the regex string:', repr(linesplitonorbar[1])
+                catstring = "...the rule component must be escaped as follows: '" + re.escape(linesplitonorbar[1]) + "'"
+                print catstring
                 sys.exit()
             if len(linesplitonorbar[4]) > 0:
                 if not linesplitonorbar[4].isdigit():
-                    print linesplitonorbar
+                    print repr(linesplitonorbar)
                     print 'Fifth field must be an integer or zero-length string - exiting...'
                     sys.exit()
             if linesplitonorbar[4] < 1:
-                print linesplitonorbar
+                print repr(linesplitonorbar)
                 print 'Fifth field integer must be greater than zero - exiting...'
                 sys.exit()
             if len(linesplitonorbar[1]) > 0:
@@ -184,30 +185,46 @@ def getrules(globalrules, localrules):
                     if len(linesplitonorbar[3]) > 0:
                         listofrulesparsed.append(linesplitonorbar)
             else:
-                print linesplitonorbar
+                print repr(linesplitonorbar)
                 print 'Fields 2, 3, and 4 must be non-empty - exiting...'
                 sys.exit()
+        elif len(linesplitonorbar) > 1:
+            print linesplitonorbar
+            print 'Edit to five fields, simply comment out, or escape any orbars in regex string - exiting...'
+            sys.exit()
     createdfiles = []
     count = 0
     for rule in listofrulesparsed:
         sourcefilename = rule[2]
         targetfilename = rule[3]
+        valid_chars = "-_.%s%s" % (string.ascii_letters, string.digits)
+        filenames = [ sourcefilename, targetfilename ]
+        for filename in filenames:
+            for c in filename:
+                if c not in valid_chars:
+                    if ' ' in filename:
+                        print repr(rule)
+                        print 'Filename', repr(filename), 'should have no spaces'
+                        sys.exit()
+                    else:
+                        print repr(rule)
+                        print 'Filename', repr(filename), 'has one or more characters other than:', repr(valid_chars)
+                        sys.exit()
+            try:
+                open(filename, 'a+').close()  # like "touch" ensures that filename is writable
+            except:
+                print 'Cannot open', repr(filename), 'as a file for appending - exiting...'
+                sys.exit()
         createdfiles.append(targetfilename)
         if count == 0:
             createdfiles.append(sourcefilename)
         if sourcefilename == targetfilename:
-            print 'In rules:', rule
-            print 'SourceFile:', sourcefilename, '...is the same as TargetFile:', targetfilename, '- exiting...'
+            print 'In rules:', repr(rule)
+            print 'SourceFile:', repr(sourcefilename), '...is the same as TargetFile:', repr(targetfilename), '- exiting...'
             sys.exit()
         if not sourcefilename in createdfiles:
-            print rule
-            print 'The sourcefilename', sourcefilename, 'has no precedent targetfilename.  Exiting...'
-            sys.exit()
-        try:
-            open(sourcefilename, 'a+').close()  # like "touch", ensures that sourcefile is writable
-            open(targetfilename, 'a+').close()  # like "touch", ensures that targetfile is writable
-        except:
-            print 'Cannot open', sourcefilename, 'or', targetfilename, 'as a file for appending - exiting...'
+            print repr(rule)
+            print 'The sourcefilename', repr(sourcefilename), 'has no precedent targetfilename.  Exiting...'
             sys.exit()
         count = count + 1
     return listofrulesparsed
@@ -219,14 +236,14 @@ def getmappings(mappings, helpmessage):
     Returns list, each item of which is a list of two items ."""
     helpmessage = str(helpmessage)
     mappings = os.path.expanduser(mappings)
-    print "Using config file:", mappings, helpmessage
+    print "Using config file:", repr(mappings), helpmessage
     mappingsraw = []
     mappingsparsed = []
     try:
         mappings = open(mappings, 'rU')
         mappingsraw = mappings.readlines()
     except:
-        print 'Mapping file', mappings, 'does not exist - exiting...'
+        print 'Mapping file', repr(mappings), 'does not exist - exiting...'
         return mappingsparsed
         #sys.exit()
     mappings.close()
@@ -251,10 +268,10 @@ def movefiles(files2dirs):
         timestampedpathname = dirpath + '/' + prefix[0:13] + prefix[14:16] + prefix[17:19] + '.' + filename
         try:
             shutil.move(filename, timestampedpathname)
-            print 'Moving', filename, 'to', timestampedpathname
+            print 'Moving', repr(filename), 'to', timestampedpathname
         except:
             if os.path.exists(filename):
-                print 'Keeping file', filename, 'where it is - directory', dirpath, 'does not exist...'
+                print 'Keeping file', repr(filename), 'where it is - directory', dirpath, 'does not exist...'
 
 def shuffle(rules, datalines):
     """Takes as arguments a list of rules and a list of data lines.
@@ -367,17 +384,17 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         cloudlines = cloudfile.readlines()
         cloudfile.close()
     if not os.path.isdir(htmldir):
-        print 'Creating directory', htmldir
+        print 'Creating directory', repr(htmldir)
         os.mkdir(htmldir)
     else:
         try:
             shutil.rmtree(htmldir)
-            print 'Removing and re-creating directory', htmldir
+            print 'Removing and re-creating directory', repr(htmldir)
             os.mkdir(htmldir)
         except:
-            print 'Could not remove and re-create directory', htmldir, '- HTML files are therefore out of date'
+            print 'Could not remove and re-create directory', repr(htmldir), '- HTML files are therefore out of date'
             sys.exit()
-    if cloud != '': print "Prepending file:", cloud, "to each urlified file"
+    if cloud != '': print "Prepending file:", repr(cloud), "to each urlified file"
     for file in listofdatafiles:
         try:
             openfile = open(file, 'r')
