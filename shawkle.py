@@ -65,6 +65,8 @@ def databackup(filelist):
     print 'Moving directory', repr(backupdirs[0]), "to", repr(backupdirs[1])
     shutil.move(backupdirs[0], backupdirs[1])
     os.mkdir(backupdirs[0])
+    for file in filelist:
+        shutil.move(file, backupdirs[0])
 
 def totalsize():
     """Returns total size in bytes of files in current directory,
@@ -92,14 +94,15 @@ def slurpdata(datafileslisted):
     for file in datafileslisted:
         try:
             openfile = open(file, 'r')
-            openfilelines = openfile.readlines()
-            for line in openfilelines:
-                if len(line) == 1:
-                    print 'File', repr(file), 'has blank lines - exiting...'
-                    sys.exit()
-        except:
+        except:  # Test this on a Unix system where file cannot be opened
             print 'Cannot open', repr(file), '- exiting...'
             sys.exit()
+        openfilelines = openfile.readlines()
+        for line in openfilelines:
+            linestripped = line.strip()
+            if len(linestripped) == 0:
+                print 'File', repr(file), 'has blank lines - exiting...'
+                sys.exit()
         openfile.close()
     for file in datafileslisted:
         openfile = open(file, 'r')
@@ -107,7 +110,6 @@ def slurpdata(datafileslisted):
         for line in openfilelines:
             alldatalines.append(line)
         openfile.close()
-        shutil.move(file, '.backup')
     alldatalines.sort()
     return alldatalines
 
@@ -119,7 +121,7 @@ def ckthatfilesaretext(datafiles):
         text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
         _null_trans = string.maketrans("", "")
         if "\0" in givenstring:     # if givenstring contains any null, it's not text
-            print 'Data file:', repr(file), 'contains a null and is therefore not a text file - exiting...'
+            print 'Data file:', repr(file), 'contains a null, ergo is not a text file - exiting...'
             sys.exit()
         if not givenstring:         # an "empty" string is "text" (arbitrary but reasonable choice)
             return True
@@ -128,7 +130,7 @@ def ckthatfilesaretext(datafiles):
         lengthgivenstring = len(givenstring)
         proportion = lengthsubstringwithnontextcharacters / lengthgivenstring
         if proportion >= 0.30: # s is 'text' if less than 30% of its characters are non-text ones
-            print 'Data file:', repr(file), 'has more than 30% non-text characters and is therefore not a text file - exiting...'
+            print 'Data file:', repr(file), 'has more than 30% non-text characters, ergo is not a text file - exiting...'
             sys.exit()
 
 def getrules(globalrules, localrules):
@@ -166,6 +168,8 @@ def getrules(globalrules, localrules):
             try:
                 re.compile(linesplitonorbar[1])
             except:
+                # If string 'linesplitonorbar[1]' is not valid regular expression (eg, contains unmatched parentheses)
+                # or some other error occurs during compilation.
                 print 'In rule:', repr(linesplitonorbar)
                 print '...in order to match the regex string:', repr(linesplitonorbar[1])
                 catstring = "...the rule component must be escaped as follows: '" + re.escape(linesplitonorbar[1]) + "'"
@@ -264,11 +268,11 @@ def movefiles(files2dirs):
     prefix = timestamp.isoformat('.')
     for line in files2dirs:
         filename = line[0]
-        dirpath = line[1]
+        dirpath = os.path.expanduser(line[1])
         timestampedpathname = dirpath + '/' + prefix[0:13] + prefix[14:16] + prefix[17:19] + '.' + filename
         try:
             shutil.move(filename, timestampedpathname)
-            print 'Moving', repr(filename), 'to', timestampedpathname
+            print 'Moving', repr(filename), 'to', repr(timestampedpathname)
         except:
             if os.path.exists(filename):
                 print 'Keeping file', repr(filename), 'where it is - directory', dirpath, 'does not exist...'
@@ -410,7 +414,9 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 try:
                     old = sedmap[0]
                     new = sedmap[1]
-                    line = line.replace(old, new)
+                    #line = line.replace(old, new)
+                    oldcompiled = re.compile(old)
+                    line = re.sub(oldcompiled, new, line)
                 except:
                     pass
             line = urlify_string(line)
@@ -471,8 +477,8 @@ if __name__ == "__main__":
     optionalcloudfile      = arguments.cloud
     sizebefore             = totalsize()
     datafilesbefore        = datals()
-    databackup(datafilesbefore)
     datalines              = slurpdata(datafilesbefore)
+    databackup(datafilesbefore)
     shuffle(rules, datalines)
     sizeafter              = totalsize()
     movefiles(filesanddestinations)
