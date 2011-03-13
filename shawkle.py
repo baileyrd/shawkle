@@ -84,8 +84,8 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
-    """Returns a consolidated, sorted list of lines from all files.
-    Else exits with helpful error message."""
+    """Returns a consolidated, sorted list of lines from all files,
+    else exits with helpful error message."""
     alldatalines = []
     for file in datafileslisted:
         filelines = list(open(file))
@@ -94,7 +94,7 @@ def slurpdata(datafileslisted):
     return alldatalines
 
 def ckthatfilesaretext(datafiles):
-    """Tests whether a file consists of plain text, with no blank lines, 
+    """Verifies that files consist of plain text, with no blank lines, 
     else exits with error message.
     Draws on p.25 recipe from O'Reilly Python Cookbook."""
     for file in datafiles:
@@ -130,27 +130,25 @@ def getrules(globalrules, localrules):
     listofrulesraw = []
     for file in listofrulefiles:
         try:
-            openrulefile = open(file, 'rU')
-            openrulefilelines = openrulefile.readlines()
-            listofrulesraw.extend(openrulefilelines)
+            rulefilelines = list(open(file))
         except:
             print 'Rule file', repr(file), 'does not exist - exiting...'
             sys.exit()
-        openrulefile.close()
-    listofrulesparsed = []
+        listofrulesraw = listofrulesraw + rulefilelines
     print "Using config file:", repr(globalrules), "- global rule file"
     print "Using config file:", repr(localrules), "- local rule file"
+    listofrulesparsed = []
     for line in listofrulesraw:
-        linestripped = line.strip()
-        linedecommented = linestripped.partition('#')[0]
-        linewithouttrailingwhitespace = linedecommented.rstrip()
-        linesplitonorbar = linewithouttrailingwhitespace.split('|')
+        linesplitonorbar = line.strip().rstrip().partition('#')[0].split('|')
         if len(linesplitonorbar) == 5:
             try:
                 linesplitonorbar[0] = int(linesplitonorbar[0])
             except:
                 print repr(linesplitonorbar)
                 print 'First field must be an integer - exiting...'
+            if linesplitonorbar[0] < 0:
+                print repr(linesplitonorbar)
+                print 'First field must be a positive integer - exiting...'
                 sys.exit()
             try:
                 re.compile(linesplitonorbar[1])
