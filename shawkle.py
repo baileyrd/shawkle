@@ -72,14 +72,11 @@ def totalsize():
     """Returns total size in bytes of files in current directory,
     verbosely removing files of length zero."""
     totalsize = 0
-    listoffiles = os.listdir(os.getcwd())
-    filesremoved = []
-    for file in listoffiles:
-        if os.path.isfile(file):
+    for file in os.listdir(os.getcwd()):
+        if os.path.isfile(file):  # ignore dot directories
             filesize = os.path.getsize(file)
             if filesize == 0:
                 print 'Removing zero-length file:', repr(file)
-                filesremoved.append(file)
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -87,35 +84,19 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
-    """If all files in the given list are readable and contain no blank lines.
-    returns a consolidated, sorted list of lines from all files.
-    Otherwise, exits with helpful error message."""
+    """Returns a consolidated, sorted list of lines from all files.
+    Else exits with helpful error message."""
     alldatalines = []
     for file in datafileslisted:
-        try:
-            openfile = open(file, 'r')
-        except:  # Test this on a Unix system where file cannot be opened
-            print 'Cannot open', repr(file), '- exiting...'
-            sys.exit()
-        openfilelines = openfile.readlines()
-        for line in openfilelines:
-            linestripped = line.strip()
-            if len(linestripped) == 0:
-                print 'File', repr(file), 'has blank lines - exiting...'
-                sys.exit()
-        openfile.close()
-    for file in datafileslisted:
-        openfile = open(file, 'r')
-        openfilelines = openfile.readlines()
-        for line in openfilelines:
-            alldatalines.append(line)
-        openfile.close()
+        filelines = list(open(file))
+        alldatalines = alldatalines + filelines
     alldatalines.sort()
     return alldatalines
 
 def ckthatfilesaretext(datafiles):
-    """Tests whether a file consists of text and exits if not.
-    Based on O'Reilly Python Cookbook, p.25."""
+    """Tests whether a file consists of plain text, with no blank lines, 
+    else exits with error message.
+    Draws on p.25 recipe from O'Reilly Python Cookbook."""
     for file in datafiles:
         givenstring = open(file).read(512)
         text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
@@ -130,8 +111,14 @@ def ckthatfilesaretext(datafiles):
         lengthgivenstring = len(givenstring)
         proportion = lengthsubstringwithnontextcharacters / lengthgivenstring
         if proportion >= 0.30: # s is 'text' if less than 30% of its characters are non-text ones
-            print 'Data file:', repr(file), 'has more than 30% non-text characters, ergo is not a text file - exiting...'
+            print 'Data file', repr(file), 'has more than 30% non-text, ergo is not a text file - exiting...'
             sys.exit()
+        filelines = list(open(file))
+        for line in filelines:
+            linestripped = line.strip()
+            if len(linestripped) == 0:
+                print 'File', repr(file), 'has blank lines - exiting...'
+                sys.exit()
 
 def getrules(globalrules, localrules):
     """Consolidates the lines of raw global and local rule files into one list.
@@ -278,7 +265,7 @@ def movefiles(files2dirs):
                 print 'Keeping file', repr(filename), 'where it is - directory', dirpath, 'does not exist...'
 
 def shuffle(rules, datalines):
-    """Takes as arguments a list of rules and a list of data lines.
+    """Takes as arguments a list of rules and a list of data lines as a starting point.
     For the first rule only: 
         writes data lines matching a regular expression to the target file,
         writes data lines not matching the regular expression to the source file.
@@ -294,27 +281,23 @@ def shuffle(rules, datalines):
         source = rule[2]
         target = rule[3]
         sortorder = rule[4]
+        sourcelines = []
+        targetlines = []
         if sortorder:
             print '%s [%s] "%s" to "%s", sorted by field %s' % (field, searchkey, source, target, sortorder)
         else:
             print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
         if rulenumber == 1:
-            data = datalines
-        else:
-            readonlysource = open(source, 'r')
-            data = readonlysource.readlines()
-            readonlysource.close()
-        targetlines =  []
-        sourcelines =  []
-        if field == 0:
-            if searchkey == ".":
-                targetlines = [ line for line in data ]
-            else:
-                sourcelines = [ line for line in data if not re.search(searchkey, line) ]
-                targetlines = [ line for line in data if re.search(searchkey, line) ]
+            if field == 0:
+                if searchkey == ".":
+                    targetlines = [ line for line in datalines ]
+                else:
+                    sourcelines = [ line for line in datalines if not re.search(searchkey, line) ]
+                    targetlines = [ line for line in datalines if re.search(searchkey, line) ]
         else:
             ethfield = field - 1
-            for line in data:
+            datalines = list(open(source))
+            for line in datalines:
                 if field > len(line.split()):
                     sourcelines.append(line)
                 else:
@@ -322,20 +305,14 @@ def shuffle(rules, datalines):
                         targetlines.append(line)
                     else:
                         sourcelines.append(line)
+        if sortorder:
+            targetlines = dsusort(data, sortorder)
         sfile = open(source, 'w')
         tfile = open(target, 'a')
         sfile.writelines(sourcelines)
         tfile.writelines(targetlines)
         sfile.close()
         tfile.close()
-        if sortorder:
-            readonlytfile = open(target, 'r')
-            data = readonlytfile.readlines()
-            readonlytfile.close()
-            tfile = open(target, 'w')
-            targetlines = dsusort(data, sortorder)
-            tfile.writelines(targetlines)
-            tfile.close()
 
 def comparesize(sizebefore, sizeafter):
     """Given the aggregate size in bytes of files "before" and "after":
