@@ -72,11 +72,12 @@ def totalsize():
     """Returns total size in bytes of files in current directory,
     verbosely removing files of length zero."""
     totalsize = 0
+    print 'Removing zero-length files.'
     for file in os.listdir(os.getcwd()):
         if os.path.isfile(file):  # ignore dot directories
             filesize = os.path.getsize(file)
             if filesize == 0:
-                print 'Removing zero-length file:', repr(file)
+                # print 'Removing zero-length file:', repr(file) # Uncomment to list each file, verbosely
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -410,7 +411,7 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 except:
                     pass
             urlifiedlines.append(line)
-        filehtml = htmldir + '/' + file + '.html'
+        filehtml = str(os.getcwd()) + '/' + htmldir + '/' + file + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
             print 'Creating urlified file', filehtml
