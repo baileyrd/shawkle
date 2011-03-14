@@ -130,16 +130,14 @@ def getrules(globalrules, localrules):
     listofrulesraw = []
     for file in listofrulefiles:
         try:
-            openrulefile = open(file, 'rU')
-            openrulefilelines = openrulefile.readlines()
-            listofrulesraw.extend(openrulefilelines)
+            rulefilelines = list(open(file))
         except:
             print 'Rule file', repr(file), 'does not exist - exiting...'
             sys.exit()
-        openrulefile.close()
-    listofrulesparsed = []
+        listofrulesraw = listofrulesraw + rulefilelines
     print "Using config file:", repr(globalrules), "- global rule file"
     print "Using config file:", repr(localrules), "- local rule file"
+    listofrulesparsed = []
     for line in listofrulesraw:
         linesplitonorbar = line.strip().rstrip().partition('#')[0].split('|')
         if len(linesplitonorbar) == 5:
@@ -148,6 +146,9 @@ def getrules(globalrules, localrules):
             except:
                 print repr(linesplitonorbar)
                 print 'First field must be an integer - exiting...'
+            if linesplitonorbar[0] < 0:
+                print repr(linesplitonorbar)
+                print 'First field must be a positive integer - exiting...'
                 sys.exit()
             try:
                 re.compile(linesplitonorbar[1])
@@ -278,27 +279,23 @@ def shuffle(rules, datalines):
         source = rule[2]
         target = rule[3]
         sortorder = rule[4]
+        sourcelines = []
+        targetlines = []
         if sortorder:
             print '%s [%s] "%s" to "%s", sorted by field %s' % (field, searchkey, source, target, sortorder)
         else:
             print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
-        if rulenumber == 1:
-            data = datalines
-        else:
-            readonlysource = open(source, 'r')
-            data = readonlysource.readlines()
-            readonlysource.close()
-        targetlines =  []
-        sourcelines =  []
+        if rulenumber > 1:
+            datalines = list(open(source))
         if field == 0:
             if searchkey == ".":
-                targetlines = [ line for line in data ]
+                targetlines = [ line for line in datalines ]
             else:
-                sourcelines = [ line for line in data if not re.search(searchkey, line) ]
-                targetlines = [ line for line in data if re.search(searchkey, line) ]
+                sourcelines = [ line for line in datalines if not re.search(searchkey, line) ]
+                targetlines = [ line for line in datalines if re.search(searchkey, line) ]
         else:
             ethfield = field - 1
-            for line in data:
+            for line in datalines:
                 if field > len(line.split()):
                     sourcelines.append(line)
                 else:
@@ -306,6 +303,9 @@ def shuffle(rules, datalines):
                         targetlines.append(line)
                     else:
                         sourcelines.append(line)
+        #2011-03-14: Not sure why this doesn't work while the more verbose version below does...
+        #if sortorder:
+        #    targetlines = dsusort(targetlines, sortorder)
         sfile = open(source, 'w')
         tfile = open(target, 'a')
         sfile.writelines(sourcelines)
@@ -313,9 +313,7 @@ def shuffle(rules, datalines):
         sfile.close()
         tfile.close()
         if sortorder:
-            readonlytfile = open(target, 'r')
-            data = readonlytfile.readlines()
-            readonlytfile.close()
+            data = list(open(target))
             tfile = open(target, 'w')
             targetlines = dsusort(data, sortorder)
             tfile.writelines(targetlines)
