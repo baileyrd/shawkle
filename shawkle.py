@@ -38,10 +38,10 @@ def datals():
     for pathname in pathnamelist:
         if os.path.isfile(pathname):
             if pathname[-3:] == "swp":
-                print 'Detected swap file', repr(pathname), '- which should be closed before proceeding - exiting...'
+                print 'Detected swap file', repr(pathname), '- close editor and re-run - exiting...'
                 sys.exit()
             if pathname[-1] == "~":
-                print 'Detected temporary file', repr(pathname), 'which should be renamed or deleted - exiting...'
+                print 'Detected temporary file', repr(pathname), '- delete and re-run - exiting...'
                 sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
@@ -52,20 +52,16 @@ def databackup(filelist):
     """Backs up the given list of files to directory "$PWD/.backup", 
     bumping previous backups to ".backupi", ".backupii", and ".backupiii"."""
     if not filelist:
-        print 'No data here to back up, or process... - exiting...'
+        print 'No data here to back up or process - exiting...'
         sys.exit()
     backupdirs = ['.backup', '.backupi', '.backupii', '.backupiii']
     for dir in backupdirs:
         if not os.path.isdir(dir):
             os.mkdir(dir)
-    print 'Deleting directory', repr(backupdirs[3])
-    shutil.rmtree(backupdirs[3])
-    print 'Moving directory', repr(backupdirs[2]), "to", repr(backupdirs[3])
-    shutil.move(backupdirs[2], backupdirs[3])
-    print 'Moving directory', repr(backupdirs[1]), "to", repr(backupdirs[2])
-    shutil.move(backupdirs[1], backupdirs[2])
-    print 'Moving directory', repr(backupdirs[0]), "to", repr(backupdirs[1])
-    shutil.move(backupdirs[0], backupdirs[1])
+    shutil.rmtree(backupdirs[3])              ; print 'Deleting directory', repr(backupdirs[3])
+    shutil.move(backupdirs[2], backupdirs[3]) ; print 'Moving directory', repr(backupdirs[2]), "to", repr(backupdirs[3])
+    shutil.move(backupdirs[1], backupdirs[2]) ; print 'Moving directory', repr(backupdirs[1]), "to", repr(backupdirs[2])
+    shutil.move(backupdirs[0], backupdirs[1]) ; print 'Moving directory', repr(backupdirs[0]), "to", repr(backupdirs[1])
     os.mkdir(backupdirs[0])
     for file in filelist:
         shutil.move(file, backupdirs[0])
@@ -76,7 +72,7 @@ def totalsize():
     totalsize = 0
     print 'Removing zero-length files.'
     for file in os.listdir(os.getcwd()):
-        if os.path.isfile(file):  # ignore dot directories
+        if os.path.isfile(file):  # ignore (dot) directories
             filesize = os.path.getsize(file)
             if filesize == 0:
                 # print 'Removing zero-length file:', repr(file) # Uncomment to list each file, verbosely
@@ -95,33 +91,6 @@ def slurpdata(datafileslisted):
         alldatalines = alldatalines + filelines
     alldatalines.sort()
     return alldatalines
-
-def ckthatfilesaretext(datafiles):
-    """Verifies that files consist of plain text, with no blank lines, 
-    else exits with error message.
-    Draws on p.25 recipe from O'Reilly Python Cookbook."""
-    for file in datafiles:
-        givenstring = open(file).read(512)
-        text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
-        _null_trans = string.maketrans("", "")
-        if "\0" in givenstring:     # if givenstring contains any null, it's not text
-            print 'Data file:', repr(file), 'contains a null, ergo is not a text file - exiting...'
-            sys.exit()
-        if not givenstring:         # an "empty" string is "text" (arbitrary but reasonable choice)
-            return True
-        substringwithnontextcharacters = givenstring.translate(_null_trans, text_characters)
-        lengthsubstringwithnontextcharacters = len(substringwithnontextcharacters)
-        lengthgivenstring = len(givenstring)
-        proportion = lengthsubstringwithnontextcharacters / lengthgivenstring
-        if proportion >= 0.30: # s is 'text' if less than 30% of its characters are non-text ones
-            print 'Data file', repr(file), 'has more than 30% non-text, ergo is not a text file - exiting...'
-            sys.exit()
-        filelines = list(open(file))
-        for line in filelines:
-            linestripped = line.strip()
-            if len(linestripped) == 0:
-                print 'File', repr(file), 'has blank lines - exiting...'
-                sys.exit()
 
 def getrules(globalrules, localrules):
     """Consolidates the lines of raw global and local rule files into one list.
@@ -240,10 +209,7 @@ def getmappings(mappings, helpmessage):
         #sys.exit()
     mappings.close()
     for line in mappingsraw:
-        linestripped = line.strip()
-        linedecommented = linestripped.partition('#')[0]
-        linewithouttrailingwhitespace = linedecommented.rstrip()
-        linesplitonorbar = linewithouttrailingwhitespace.split('|')
+        linesplitonorbar = line.strip().rstrip().partition('#')[0].split('|')
         if len(linesplitonorbar) == 2:
             mappingsparsed.append(linesplitonorbar)
     return mappingsparsed
@@ -452,6 +418,33 @@ def dsusort(dlines, field):
     dlinessorted = []
     dlinessorted = [ t[1] for t in dlinesdecorated ]
     return dlinessorted
+
+def ckthatfilesaretext(datafiles):
+    """Verifies that files consist of plain text, with no blank lines, 
+    else exits with error message.
+    Draws on p.25 recipe from O'Reilly Python Cookbook."""
+    for file in datafiles:
+        givenstring = open(file).read(512)
+        text_characters = "".join(map(chr, range(32, 127))) + "\n\r\t\b"
+        _null_trans = string.maketrans("", "")
+        if "\0" in givenstring:     # if givenstring contains any null, it's not text
+            print 'Data file:', repr(file), 'contains a null, ergo is not a text file - exiting...'
+            sys.exit()
+        if not givenstring:         # an "empty" string is "text" (arbitrary but reasonable choice)
+            return True
+        substringwithnontextcharacters = givenstring.translate(_null_trans, text_characters)
+        lengthsubstringwithnontextcharacters = len(substringwithnontextcharacters)
+        lengthgivenstring = len(givenstring)
+        proportion = lengthsubstringwithnontextcharacters / lengthgivenstring
+        if proportion >= 0.30: # s is 'text' if less than 30% of its characters are non-text ones
+            print 'Data file', repr(file), 'has more than 30% non-text, ergo is not a text file - exiting...'
+            sys.exit()
+        filelines = list(open(file))
+        for line in filelines:
+            linestripped = line.strip()
+            if len(linestripped) == 0:
+                print 'File', repr(file), 'has blank lines - exiting...'
+                sys.exit()
 
 if __name__ == "__main__":
     arguments              = getoptions()
