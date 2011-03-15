@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from __future__ import with_statement
-import os, re, shutil, string, sys, datetime
-import optparse
+#from __future__ import with_statement
+import os, re, shutil, string, sys, datetime, optparse
 
 def getoptions():
     p = optparse.OptionParser(description="Shawkle - Rule-driven processor of plain-text lists",
@@ -25,6 +24,9 @@ def getoptions():
     p.add_option("--sedhtml", action="store", type="string", dest="sedhtml",
                 help="stream edits for urlified HTML, eg, shortening visible pathnames; default './.sedhtml'",
                 default=".sedhtml")
+    p.add_option("--htmldir", action="store", type="string", dest="htmldir",
+                help="name of directory for urlified HTML files; default './.html'",
+                default=".html")
     ( options, arguments ) = p.parse_args()
     return options
 
@@ -466,6 +468,6 @@ if __name__ == "__main__":
     sizeafter              = totalsize()
     movefiles(filesanddestinations)
     datafilesaftermove     = datals()
-    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
+    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, arguments.htmldir, optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 
