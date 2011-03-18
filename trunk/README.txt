@@ -87,6 +87,15 @@ These directories are, from most recent to oldest:
     .backupii
     .backupiii
 
+As of March 2011, the most important issue remaining to be
+addressed is that of changing the algorithm in databackup()
+to _copy_ data between the .backup* directories instead of
+_moving_ the directories.  Moving a directory under Subversion
+control creates problems with the Subversion project as
+a whole.  This will be addressed soon, as the scenario of
+using shawkle in data directories under Subversion control
+is quite likely.
+
 I consider this script robust enough to begin publicizing it
 more widely and would welcome any feedback or bug reports
 from users.  The script tries hard to keep the user from
