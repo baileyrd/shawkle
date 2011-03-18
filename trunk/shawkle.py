@@ -111,7 +111,7 @@ def getrules(globalrules, localrules):
     print "Using config file:", repr(localrules), "- local rule file"
     listofrulesparsed = []
     for line in listofrulesraw:
-        linesplitonorbar = line.strip().partition('#')[0].split('|').rstrip()
+        linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
         if len(linesplitonorbar) == 5:
             try:
                 linesplitonorbar[0] = int(linesplitonorbar[0])
@@ -209,7 +209,7 @@ def getmappings(mappings, helpmessage):
         #sys.exit()
     mappings.close()
     for line in mappingsraw:
-        linesplitonorbar = line.strip().partition('#')[0].split('|').rstrip()
+        linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
         if len(linesplitonorbar) == 2:
             mappingsparsed.append(linesplitonorbar)
     return mappingsparsed
