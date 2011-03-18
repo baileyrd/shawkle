@@ -1,6 +1,0 @@
-0|^=20|lines.tmp|agendaa|    # Note that comments are allowed and simply stripped away.
-2|^http:|lines.tmp|huh.tmp|  # This sequence of four rules ensures that lines with URLs in
-0|.|huh.tmp|lines.txt|       # field 2 appear before other lines -- unless the line
-0|.|lines.tmp|lines.txt|     # starts with "^=20" (and therefore belongs in the calendar file).
-0|^A |lines.txt|agendaa|
-0|^B |lines.txt|agendab|

@@ -1,2 +1,0 @@
-_CLOUD http://www.w3.org/2005/Incubator/lld/
-_CLOUD http://dublincore.org/
