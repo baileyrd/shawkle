@@ -1,5 +1,0 @@
-NOW Shovel snow
-= 2010-02-15 Tue 1400 TELECON
-= 2010-08-24 Tue 0800 TELECON
-FOOBAR Line will end up in "default" lines.txt if not covered by a rule - eg, field 1 is "FOOBAR", field 3 is "will"...
-LATER Shop: noodles, sauce, Parmesan cheese

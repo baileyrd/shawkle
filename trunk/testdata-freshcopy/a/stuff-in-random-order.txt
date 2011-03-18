@@ -1,0 +1,11 @@
+_CLOUD http://www.w3.org/2005/Incubator/lld/
+_CLOUD http://dublincore.org/
+B This line will end up in ../testagendab. After running shawkle, cd ../testagendab, then run shawkle there.
+NOW Shovel snow.
+= 2010-02-15 Tue 1400 TELECON [Edit thus: "s/^=/C/". Run shawkle. Look in ~/shawkle/testagendac/2010.log]
+= 2010-08-24 Tue 0800 TELECON [Edit thus: "s/^=/C/". Run shawkle. Look in ~/shawkle/testagendac/2010.log]
+= 2011-02-10 Thu 1000 TELECON
+LATER Buy noodles, sauce.
+LATER Buy Parmesan cheese.
+README A new README.txt file will be created with this line when shawkle.py is run.
+NOW Read http://www.w3.org/blog/SW/2011/03/15/rdf_working_group_is_settling_in

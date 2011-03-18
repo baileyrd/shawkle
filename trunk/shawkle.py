@@ -290,33 +290,6 @@ def comparesize(sizebefore, sizeafter):
     else:
         print 'Warning: data may have been lost - revert to backup!'
 
-def urlify_string(s):
-    """Puts HTML links around a URL, i.e., a string ("s") starting
-    with "http", "file", or "irc", etc.
-    This code, found on Web, appears to be based on Perl Cookbook, section 6.21 ("urlify")."""
-    urls = r'(http|https|telnet|gopher|file|wais|ftp|irc)'
-    ltrs = r'\w';
-    gunk = r'/#~:.?+=&%@!\-'
-    punc = r'.:?\-'
-    any  = ltrs + gunk + punc 
-    pat = re.compile(r"""
-      \b                    # start at word boundary
-      (                     # begin \1  {
-       %(urls)s  :          # need resource and a colon
-       [%(any)s] +?         # followed by one or more
-                            #  of any valid character, but
-                            #  be conservative and take only
-                            #  what you need to....
-      )                     # end   \1  }
-      (?=                   # look-ahead non-consumptive assertion
-       [%(punc)s]*          # either 0 or more punctuation
-       [^%(any)s]           #   followed by a non-url char
-       |                    # or else
-       $                    #   then end of the string
-      )
-    """%locals(), re.VERBOSE | re.IGNORECASE)
-    return re.sub(pat, r"<A HREF=\1>\1</A>", s)
-
 def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
     """For each file in list of files (listofdatafiles): 
         create a urlified (HTML) file in the specified directory (htmldir), 
@@ -388,7 +361,6 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
             field1before = field1
             linenumber += 1
             openfilehtml.write(urlifiedline)
-        openfilehtml.write('</PRE>\n')
         openfilehtml.close()
 
 def dsusort(dlines, field):
@@ -406,7 +378,7 @@ def dsusort(dlines, field):
         decoratedline = (fieldsought, line)
         dlinesdecorated.append(decoratedline)
     dlinesdecorated.sort()
-    dlinessorted = []
+    dlinessorted = []   # 2011-03-14: Is this line necessary?
     dlinessorted = [ t[1] for t in dlinesdecorated ]
     return dlinessorted
 
@@ -437,13 +409,37 @@ def ckthatfilesaretext(datafiles):
                 print 'File', repr(file), 'has blank lines - exiting...'
                 sys.exit()
 
+def urlify_string(s):
+    """Puts HTML links around a URL, i.e., a string ("s") starting
+    with "http", "file", or "irc", etc.
+    This code, found on Web, appears to be based on Perl Cookbook, section 6.21 ("urlify")."""
+    urls = r'(http|https|telnet|gopher|file|wais|ftp|irc)'
+    ltrs = r'\w';
+    gunk = r'/#~:.?+=&%@!\-'
+    punc = r'.:?\-'
+    any  = ltrs + gunk + punc 
+    pat = re.compile(r"""
+      \b                    # start at word boundary
+      (                     # begin \1  {
+       %(urls)s  :          # need resource and a colon
+       [%(any)s] +?         # followed by one or more
+                            #  of any valid character, but
+                            #  be conservative and take only
+                            #  what you need to....
+      )                     # end   \1  }
+      (?=                   # look-ahead non-consumptive assertion
+       [%(punc)s]*          # either 0 or more punctuation
+       [^%(any)s]           #   followed by a non-url char
+       |                    # or else
+       $                    #   then end of the string
+      )
+    """%locals(), re.VERBOSE | re.IGNORECASE)
+    return re.sub(pat, r"<A HREF=\1>\1</A>", s)
+
 if __name__ == "__main__":
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
-    sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
-    sedhtmlmappings        = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
-    optionalcloudfile      = arguments.cloud
     sizebefore             = totalsize()
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
@@ -452,6 +448,11 @@ if __name__ == "__main__":
     sizeafter              = totalsize()
     movefiles(filesanddestinations)
     datafilesaftermove     = datals()
-    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, arguments.htmldir, optionalcloudfile)
+    sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
+    sedhtmlmappings        = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
+    optionalcloudfile      = arguments.cloud
+    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
+    # Need to replace fourth argument of urlify with something like str(arguments.htmldir) - test...
+    # urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.imac', optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 

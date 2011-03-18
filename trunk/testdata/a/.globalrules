@@ -1,0 +1,5 @@
+2|^http:|lines.tmp|lines.txt|    # This sequence of two rules ensures that lines with URLs in
+0|.|lines.tmp|lines.txt|         # field 2 appear before other lines
+0|^= |lines.tmp|alines|          # Note that comments are allowed and simply stripped away.
+0|^A |lines.txt|alines|
+0|^B |lines.txt|blines|
