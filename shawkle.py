@@ -197,7 +197,7 @@ def getmappings(mappings, helpmessage):
     mappingsraw = []
     mappingsparsed = []
     try:
-        mappings = open(mappings, 'rU')
+        mappings = open(mappings, 'rU')        # 'rU' translates any line separator to '\n'
         mappingsraw = mappings.readlines()
     except:
         print 'Mapping file', repr(mappings), 'does not exist - exiting...'
@@ -434,6 +434,7 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
+    os.chdir('/home/tbaker/u/testdata3')
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
