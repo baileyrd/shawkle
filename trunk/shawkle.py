@@ -89,7 +89,9 @@ def getrules(globalrules, localrules):
     """Consolidates the lines of raw global and local rule files into one list.
     Deletes comments and blank lines.  Performs sanity checks to ensure well-formedness of rules.
     Returns a consolidated list of rules, each item itself a list of rule components.
-    Note 2011-03-28: could generalize this function -- Why require global rules? And why just two rule files?"""
+    Note 2011-03-28: could generalize this function -- Why require global rules? And why just two rule files?
+    Also: test with illegal filenames.  Maybe also test for dotfiles; when used as source or target files,
+    dot files would throw off the size test in comparesize()."""
     globalrules = os.path.expanduser(globalrules)
     localrules = os.path.expanduser(localrules)
     listofrulefiles = [ str(globalrules), str(localrules) ]
@@ -432,7 +434,6 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    os.chdir('/home/tbaker/u/testdata3')
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
