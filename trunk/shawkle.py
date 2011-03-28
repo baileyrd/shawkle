@@ -38,7 +38,7 @@ def datals():
                 sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
-    ckthatfilesaretext(filelist)
+    mustbetext(filelist)
     return filelist
 
 def databackup(filelist):
@@ -88,7 +88,8 @@ def slurpdata(datafileslisted):
 def getrules(globalrules, localrules):
     """Consolidates the lines of raw global and local rule files into one list.
     Deletes comments and blank lines.  Performs sanity checks to ensure well-formedness of rules.
-    Returns a consolidated list of rules, each item itself a list of rule components."""
+    Returns a consolidated list of rules, each item itself a list of rule components.
+    Note 2011-03-28: could generalize this function -- Why require global rules? And why just two rule files?"""
     globalrules = os.path.expanduser(globalrules)
     localrules = os.path.expanduser(localrules)
     listofrulefiles = [ str(globalrules), str(localrules) ]
@@ -376,8 +377,8 @@ def dsusort(dlines, field):
     dlinessorted = [ t[1] for t in dlinesdecorated ]
     return dlinessorted
 
-def ckthatfilesaretext(datafiles):
-    """Verifies that files consist of plain text, with no blank lines, 
+def mustbetext(datafiles):
+    """Files must consist of plain text, with no blank lines, 
     else exits with error message.
     Draws on p.25 recipe from O'Reilly Python Cookbook."""
     for file in datafiles:
@@ -431,6 +432,7 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
+    os.chdir('/home/tbaker/u/testdata3')
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
