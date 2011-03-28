@@ -1,32 +1,25 @@
 #!/usr/bin/env python
 
 from __future__ import division
-#from __future__ import with_statement
 import os, re, shutil, string, sys, datetime, optparse
 
 def getoptions():
-    p = optparse.OptionParser(description="Shawkle - Rule-driven processor of plain-text lists",
-                              prog="shawkle.py", version="0.4", usage="%prog")
-    p.add_option("--cloud", action="store", type="string", dest="cloud",
-                help="file, contents of which to be prefixed to each urlified HTML file; default ''", default="")
-    p.add_option("--files2dirs", action="store", type="string", dest="files2dirs",
-                help="files with corresponding target directories; default './.files2dirs'",
-                default='.files2dirs')
-    p.add_option("--globalrules", action="store", type="string", dest="globalrules",
-                help="rules used globally (typically an absolute pathname), processed first; default '.globalrules'",
-                default='.globalrules')
-    p.add_option("--localrules", action="store", type="string", dest="localrules",
-                help="rules used locally (typically a relative pathname), processed second; default './.rules'",
-                default=".rules")
-    p.add_option("--sedtxt", action="store", type="string", dest="sedtxt",
-                help="stream edits for plain text, eg, expanding drive letters to URIs; default './.sedtxt'",
-                default=".sedtxt")
-    p.add_option("--sedhtml", action="store", type="string", dest="sedhtml",
-                help="stream edits for urlified HTML, eg, shortening visible pathnames; default './.sedhtml'",
-                default=".sedhtml")
-    p.add_option("--htmldir", action="store", type="string", dest="htmldir",
-                help="name of directory for urlified HTML files; default './.html'",
-                default=".html")
+    p = optparse.OptionParser(description="Shawkle - Rule-driven maintenance of plain-text lists",
+                              prog="shawkle.py", version="0.5", usage="%prog")
+    p.add_option("--cloud", action="store", type="string", dest="cloud", default="",
+                help="file, contents of which to be prefixed to each urlified HTML file; default ''")
+    p.add_option("--files2dirs", action="store", type="string", dest="files2dirs", default='.files2dirs',
+                help="files with corresponding target directories; default './.files2dirs'")
+    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='.globalrules',
+                help="rules used globally (typically an absolute pathname), processed first; default '.globalrules'")
+    p.add_option("--localrules", action="store", type="string", dest="localrules", default=".rules",
+                help="rules used locally (typically a relative pathname), processed second; default './.rules'")
+    p.add_option("--sedtxt", action="store", type="string", dest="sedtxt", default=".sedtxt",
+                help="stream edits for plain text, eg, expanding drive letters to URIs; default './.sedtxt'")
+    p.add_option("--sedhtml", action="store", type="string", dest="sedhtml", default=".sedhtml",
+                help="stream edits for urlified HTML, eg, shortening visible pathnames; default './.sedhtml'")
+    p.add_option("--htmldir", action="store", type="string", dest="htmldir", default=".html",
+                help="name of directory for urlified HTML files; default './.html'")
     ( options, arguments ) = p.parse_args()
     return options
 
@@ -256,6 +249,7 @@ def shuffle(rules, datalines):
             print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
         if rulenumber > 1:
             datalines = list(open(source))
+            #datalines = list[source]
         if field == 0:
             if searchkey == ".":
                 targetlines = [ line for line in datalines ]
