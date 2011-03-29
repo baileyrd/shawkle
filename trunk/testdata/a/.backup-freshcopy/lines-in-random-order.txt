@@ -1,0 +1,10 @@
+LATER Buy Parmesan cheese.
+_CLOUD http://www.w3.org/2005/Incubator/lld/
+= 2010-08-24 Tue 0800 TELECON - try changing the equals sign at line beginning ('=') to 'B', then re-run shawkle
+_CLOUD http://dublincore.org/
+= 2011-02-10 Thu 1000 TELECON
+LATER Buy noodles, sauce.
+B This line will end up in ../testagendab. After running shawkle, cd ../testagendab, then run shawkle there.
+NOW Read http://www.w3.org/blog/SW/2011/03/15/rdf_working_group_is_settling_in
+= 2010-02-15 Tue 1400 TELECON - try changing the equals sign at line beginning ('=') to 'B', then re-run shawkle
+NOW Shovel snow.
