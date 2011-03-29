@@ -1,0 +1,7 @@
+0|.|alines.txt|lines.txt|
+0|^= 2|lines.txt|calendar.txt|
+1|NOW|lines.txt|todo.txt|
+1|LATER|lines.txt|todo.txt|
+1|DEMO|lines.txt|demo-howto.txt|
+1|_CLOUD|lines.txt|_cloud.txt|
+0|^B |lines.txt|blines.txt|
