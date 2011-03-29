@@ -1,0 +1,44 @@
+# Rule file for "Shawkle: a rule-based list processor" - see notes below
+# 2003-05-11: Added /cygdrive/a/u/lines/agenda/.rulesall, called $Rulesall in shawkle.
+#             This implies at a minimum that every shawkle directory will use
+#             the default name "lines" and that the $Rulesall rules will apply 
+#             to the data in every directory where shawkle is run.
+#0|.|$Allfiles|lines|
+
+0|.|$Allfiles|lines.tmp|sort -bdf
+2|^e:|lines.tmp|huh3|
+2|^irc:|lines.tmp|huh3|
+2|^http:|lines.tmp|huh3|sort -bf
+0|.|huh3|lines|
+0|.|lines.tmp|lines|
+
+0|^__|lines|agendab|
+0|^_[A-Z]|lines|agendaa|
+0|^=|lines|agendaa|
+0|^+|lines|agendaa|
+0|^BB |lines|agendaa|
+0|^A |lines|agendaa|
+0|^B |lines|agendab|
+0|^N |lines|agendab|
+0|^X |lines|agendax|
+0|^Y |lines|agenday|
+0|^C |lines|agendab|
+0|^\\/|lines|agendab|
+0|^\\~|lines|agendab|
+0|^CLOG|lines|agendab|
+0|^XLOG|lines|agendax|
+0|^YLOG|lines|agenday|
+0|^ZLOG|lines|agendab|
+0|^2005-.. |lines|agendaz|
+0|^2006-.. |lines|agendaz|
+0|^2007-.. |lines|agendaz|
+0|^2008-.. |lines|agendaz|
+0|^2009-.. |lines|agendaz|
+0|^2010-.. |lines|agendaz|
+0|.|lines|huh2|
+0|.|agendaa|huh2|sort
+2|^e:|huh2|huh3|
+2|^irc:|huh2|huh3|
+2|^http:|huh2|huh3|sort -bf
+0|.|huh3|lines|
+0|.|huh2|lines|
