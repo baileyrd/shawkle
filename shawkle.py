@@ -38,11 +38,46 @@ def datals():
                 sys.exit()
             if pathname[0] != ".":
                 filelist.append(pathname)
-    mustbetext(filelist)
     return filelist
 
-def databackup(filelist):
-    """Backs up the given list of files to directory "$PWD/.backup", 
+def removefiles(targetdirectory):
+    pwd = os.getcwd()
+    abstargetdir = pwd + '/' + targetdirectory
+    if os.path.isdir(abstargetdir):
+        os.chdir(abstargetdir)
+        files = datals()
+        if files:
+            print 'Clearing out directory', repr(targetdirectory)
+            for file in files:
+                os.remove(file)
+        os.chdir(pwd)
+    else:
+        print 'Directory', repr(abstargetdir), 'does not exist - exiting...'
+        sys.exit()
+
+def movefiles(sourcedirectory, targetdirectory):
+    pwd = os.getcwd()
+    abssourcedir = pwd + '/' + sourcedirectory
+    abstargetdir = pwd + '/' + targetdirectory
+    if os.path.isdir(abssourcedir):
+        if os.path.isdir(abstargetdir):
+            os.chdir(abssourcedir)
+            files = datals()
+            if files:
+                print 'Moving files from directory', repr(sourcedirectory), "to directory", repr(targetdirectory)
+                for file in files:
+                    shutil.copy2(file, abstargetdir)
+                    os.remove(file)
+            os.chdir(pwd)
+        else:
+            print 'Directory', repr(abstargetdir), 'does not exist - exiting...'
+            sys.exit()
+    else:
+        print 'Directory', repr(abssourcedir), 'does not exist - exiting...'
+        sys.exit()
+
+def movetobackups(filelist):
+    """Moves given list of files to directory "$PWD/.backup", 
     bumping previous backups to ".backupi", ".backupii", and ".backupiii"."""
     if not filelist:
         print 'No data here to back up or process - exiting...'
@@ -51,11 +86,10 @@ def databackup(filelist):
     for dir in backupdirs:
         if not os.path.isdir(dir):
             os.mkdir(dir)
-    shutil.rmtree(backupdirs[3])              ; print 'Deleting directory', repr(backupdirs[3])
-    shutil.move(backupdirs[2], backupdirs[3]) ; print 'Moving directory', repr(backupdirs[2]), "to", repr(backupdirs[3])
-    shutil.move(backupdirs[1], backupdirs[2]) ; print 'Moving directory', repr(backupdirs[1]), "to", repr(backupdirs[2])
-    shutil.move(backupdirs[0], backupdirs[1]) ; print 'Moving directory', repr(backupdirs[0]), "to", repr(backupdirs[1])
-    os.mkdir(backupdirs[0])
+    removefiles(backupdirs[3])
+    movefiles(backupdirs[2], backupdirs[3])
+    movefiles(backupdirs[1], backupdirs[2])
+    movefiles(backupdirs[0], backupdirs[1])
     for file in filelist:
         shutil.move(file, backupdirs[0])
 
@@ -63,9 +97,9 @@ def totalsize():
     """Returns total size in bytes of files in current directory,
     verbosely removing files of length zero."""
     totalsize = 0
-    print 'Removing zero-length files.'
+    print 'Removing zero-length files'
     for file in os.listdir(os.getcwd()):
-        if os.path.isfile(file):  # ignore (dot) directories
+        if os.path.isfile(file):  # ignore directories, especially hidden ("dot") directories
             filesize = os.path.getsize(file)
             if filesize == 0:
                 # print 'Removing zero-length file:', repr(file) # Uncomment to list each file, verbosely
@@ -76,8 +110,10 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
-    """Returns a consolidated, sorted list of lines from all files,
+    """Confirms that all listed files consist of plain text with no blank lines.
+    Returns a consolidated, sorted list of lines from all files,
     else exits with helpful error message."""
+    mustbetext(datafileslisted)
     alldatalines = []
     for file in datafileslisted:
         filelines = list(open(file))
@@ -210,7 +246,7 @@ def getmappings(mappings, helpmessage):
             mappingsparsed.append(linesplitonorbar)
     return mappingsparsed
 
-def movefiles(files2dirs):
+def relocatefiles(files2dirs):
     """Given the list of mappings of filenames to target directories:
         if file and directory both exist, moves file to directory,
         if file exists but not the target directory, reports that the file is staying put."""
@@ -276,6 +312,74 @@ def shuffle(rules, datalines):
             targetlines = dsusort(targetlines, sortorder)
             targetfile = open(target, 'w'); targetfile.writelines(targetlines); targetfile.close()
 
+def shuffle2(rules, datalines):
+    """Takes as arguments a list of rules and a list of data lines as a starting point.
+    For the first rule only: 
+        writes data lines matching a regular expression to the target file,
+        writes data lines not matching the regular expression to the source file.
+    For each subsequent rule: 
+        reads data lines from source file, 
+        writes lines matching a regular expression to the target file, 
+        writes lines not matching a regular expression to the source file, overwriting the source file."""
+    rulenumber = 0
+    all = {}
+    for rule in rules:
+        rulenumber += 1
+        field = rule[0]
+        searchkey = rule[1]
+        source = rule[2]
+        target = rule[3]
+        sortorder = rule[4]
+        sourcelines = []
+        targetlines = []
+        if sortorder:
+            print '%s [%s] "%s" to "%s", sorted by field %s' % (field, searchkey, source, target, sortorder)
+        else:
+            print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
+        if rulenumber > 1:
+            #datalines = list(open(source))
+            datalines = list(all[source])
+        if field == 0:
+            if searchkey == ".":
+                targetlines = [ line for line in datalines ]
+            else:
+                sourcelines = [ line for line in datalines if not re.search(searchkey, line) ]
+                targetlines = [ line for line in datalines if re.search(searchkey, line) ]
+        else:
+            ethfield = field - 1
+            for line in datalines:
+                if field > len(line.split()):
+                    sourcelines.append(line)
+                else:
+                    if re.search(searchkey, line.split()[ethfield]):
+                        targetlines.append(line)
+                    else:
+                        sourcelines.append(line)
+                if sortorder:
+                    targetlines = list(open(target))
+                    targetlines = dsusort(targetlines, sortorder)
+                    targetfile = open(target, 'w'); targetfile.writelines(targetlines); targetfile.close()
+        ##print all
+        all[source] = sourcelines
+        print targetlines
+        if all[target]:
+            all[target] = all[target] + targetlines
+        elif not targetlines:
+            all[target] = ''
+        else:
+            all[target] = targetlines
+        print "Here are the sourcelines:"
+        print sourcelines
+        print "Here are the targetlines:"
+        print targetlines
+        # 2011-03-28: something like...:
+        # for key in all:
+        #     newfile = open(key, 'w')
+        #     newfile.writelines(all[key])
+        #     print "Lines", all[key], "will be written to file named", repr(key)
+        # sourcefile = open(source, 'w'); sourcefile.writelines(sourcelines); sourcefile.close()
+        # targetfile = open(target, 'a'); targetfile.writelines(targetlines); targetfile.close()
+
 def comparesize(sizebefore, sizeafter):
     """Given the aggregate size in bytes of files "before" and "after":
         reports if sizes are the same, or
@@ -292,7 +396,9 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         create a urlified (HTML) file in the specified directory (htmldir), 
         prepending the contents of an optional cloud file (cloud) to each urlified file,
         optionally stream-editing the plain text using before-and-after transforms (sedtxt), and
-        optionally stream-editing the urlified text using before-and-after transforms (sedhtml)."""
+        optionally stream-editing the urlified text using before-and-after transforms (sedhtml).
+        Note: Need to replace fourth argument of urlify with something like str(arguments.htmldir) - test...
+        urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.imac', optionalcloudfile)"""
     cloud = os.path.expanduser(cloud)
     cloudlines = []
     if os.path.isfile(cloud):
@@ -303,13 +409,7 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         print 'Creating directory', repr(htmldir)
         os.mkdir(htmldir)
     else:
-        try:
-            shutil.rmtree(htmldir)
-            print 'Removing and re-creating directory', repr(htmldir)
-            os.mkdir(htmldir)
-        except:
-            print 'Could not remove and re-create directory', repr(htmldir), '- HTML files are therefore out of date'
-            sys.exit()
+        removefiles(htmldir)
     if cloud != '': print "Prepending file:", repr(cloud), "to each urlified file"
     for file in listofdatafiles:
         try:
@@ -326,7 +426,6 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 try:
                     old = sedmap[0]
                     new = sedmap[1]
-                    #line = line.replace(old, new)
                     oldcompiled = re.compile(old)
                     line = re.sub(oldcompiled, new, line)
                 except:
@@ -343,9 +442,9 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         filehtml = str(os.getcwd()) + '/' + htmldir + '/' + file + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
-            print 'Creating urlified file', filehtml
+            print 'Creating urlified file', repr(filehtml)
         except:
-            print 'Cannot open', filehtml, '- exiting...'
+            print 'Cannot open', repr(filehtml), '- exiting...'
             sys.exit()
         openfilehtml.write('<PRE>\n')
         linenumber = 1
@@ -434,23 +533,21 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    os.chdir('/home/tbaker/u/testdata3')
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
     sizebefore             = totalsize()
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
-    databackup(datafilesbefore)
+    movetobackups(datafilesbefore)
     shuffle(rules, datalines)
+    #shuffle2(rules, datalines)
     sizeafter              = totalsize()
-    movefiles(filesanddestinations)
+    relocatefiles(filesanddestinations)
     datafilesaftermove     = datals()
     sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
     sedhtmlmappings        = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
     optionalcloudfile      = arguments.cloud
     urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
-    # Need to replace fourth argument of urlify with something like str(arguments.htmldir) - test...
-    # urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.imac', optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 
