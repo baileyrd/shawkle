@@ -1,0 +1,2 @@
+#mv -i .files2dirs .x
+mv -i .x .files2dirs
