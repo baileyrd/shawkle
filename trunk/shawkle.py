@@ -110,9 +110,8 @@ def totalsize():
     return totalsize
 
 def slurpdata(datafileslisted):
-    """Confirms that all listed files consist of plain text with no blank lines.
-    Returns a consolidated, sorted list of lines from all files,
-    else exits with helpful error message."""
+    """Calls mustbetext() to confirm that all listed files consist of plain text with no blank lines.
+    Returns a consolidated, sorted list of lines from all files."""
     mustbetext(datafileslisted)
     alldatalines = []
     for file in datafileslisted:
@@ -313,7 +312,10 @@ def shuffle(rules, datalines):
             targetfile = open(target, 'w'); targetfile.writelines(targetlines); targetfile.close()
 
 def shuffle2(rules, datalines):
-    """Takes as arguments a list of rules and a list of data lines as a starting point.
+    """An alternative way to code shuffle().  
+    Instead of writing files at every step of the way, collects lines in a dictionary structure.
+    Initial tests on 2011-03-30 suggest that this might actually be _slower_.
+    Takes as arguments a list of rules and a list of data lines as a starting point.
     For the first rule only: 
         writes data lines matching a regular expression to the target file,
         writes data lines not matching the regular expression to the source file.
@@ -341,6 +343,7 @@ def shuffle2(rules, datalines):
             datalines = list(all[source])
         if field == 0:
             if searchkey == ".":
+                sourcelines = []
                 targetlines = [ line for line in datalines ]
             else:
                 sourcelines = [ line for line in datalines if not re.search(searchkey, line) ]
@@ -356,29 +359,21 @@ def shuffle2(rules, datalines):
                     else:
                         sourcelines.append(line)
                 if sortorder:
-                    targetlines = list(open(target))
                     targetlines = dsusort(targetlines, sortorder)
-                    targetfile = open(target, 'w'); targetfile.writelines(targetlines); targetfile.close()
-        ##print all
-        all[source] = sourcelines
-        print targetlines
+        if sourcelines:
+            all[source] = sourcelines
+        else:
+            all[source] = []
+        if not all.has_key(target):
+            all[target] = []
         if all[target]:
             all[target] = all[target] + targetlines
-        elif not targetlines:
-            all[target] = ''
         else:
             all[target] = targetlines
-        print "Here are the sourcelines:"
-        print sourcelines
-        print "Here are the targetlines:"
-        print targetlines
-        # 2011-03-28: something like...:
-        # for key in all:
-        #     newfile = open(key, 'w')
-        #     newfile.writelines(all[key])
-        #     print "Lines", all[key], "will be written to file named", repr(key)
-        # sourcefile = open(source, 'w'); sourcefile.writelines(sourcelines); sourcefile.close()
-        # targetfile = open(target, 'a'); targetfile.writelines(targetlines); targetfile.close()
+        for key in all:
+            newfile = open(key, 'w')
+            newfile.writelines(all[key])
+            newfile.close()
 
 def comparesize(sizebefore, sizeafter):
     """Given the aggregate size in bytes of files "before" and "after":
@@ -479,8 +474,8 @@ def dsusort(dlines, field):
     return dlinessorted
 
 def mustbetext(datafiles):
-    """Files must consist of plain text, with no blank lines, 
-    else exits with error message.
+    """Confirms that listed files consist of plain text, with no blank lines, 
+    else exits with helpful error message.
     Draws on p.25 recipe from O'Reilly Python Cookbook."""
     for file in datafiles:
         givenstring = open(file).read(512)
@@ -540,8 +535,8 @@ if __name__ == "__main__":
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
     movetobackups(datafilesbefore)
-    shuffle(rules, datalines)
-    #shuffle2(rules, datalines)
+    #shuffle(rules, datalines)
+    shuffle2(rules, datalines)
     sizeafter              = totalsize()
     relocatefiles(filesanddestinations)
     datafilesaftermove     = datals()
