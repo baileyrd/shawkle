@@ -528,7 +528,7 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    os.chdir('/home/tbaker/u/scripts/PYFFLE/shawkle/testdata/a')
+    os.chdir('/home/tbaker/shawkle/testdata/a')
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
