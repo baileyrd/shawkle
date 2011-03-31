@@ -47,7 +47,7 @@ def removefiles(targetdirectory):
         os.chdir(abstargetdir)
         files = datals()
         if files:
-            print 'Clearing out directory', repr(targetdirectory)
+            print 'Clearing out directory', repr(abstargetdir)
             for file in files:
                 os.remove(file)
         os.chdir(pwd)
