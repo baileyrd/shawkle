@@ -1,0 +1,29 @@
+Issues with shawkle
+
+----------------------------------------------------------------------
+Arguments
+    shawkle.py --cloud "$HOME/u/agendab/cloud" - this works
+    shawkle.py --cloud "~/u/agendab/cloud" - this does not
+
+----------------------------------------------------------------------
+Sorting
+    Sorting by "Jan, Feb, Mar..."
+    Reverse sorting.
+
+----------------------------------------------------------------------
+Need to add test that filenames in rule files do not differ only by case
+    The following leads to loss of data under Cygwin!
+
+    1|^FTMP|lines|a|
+    1|^TOP|lines|A|
+
+----------------------------------------------------------------------
+Use pydoc to generate simple HTML manual page
+    /usr/lib/python2.6/pydoc.py - see Learning Python
+
+----------------------------------------------------------------------
+Test on Unix system where files listed may not be opened, or directory writeable, because of permissions
+
+----------------------------------------------------------------------
+Is requirement to have local and global files arbitrary?
+    getrules() could be changed to allow any number of rule files - at least one...

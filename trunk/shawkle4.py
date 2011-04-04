@@ -212,11 +212,11 @@ def getrules(globalrules, localrules):
             createdfiles.append(sourcefilename)
         if sourcefilename == targetfilename:
             print 'In rules:', repr(rule)
-            print 'SourceFile:', repr(sourcefilename), 'is same as TargetFile:', repr(targetfilename), '- exiting...'
+            print 'Source file:', repr(sourcefilename), 'is same as target file:', repr(targetfilename), '- exiting...'
             sys.exit()
         if not sourcefilename in createdfiles:
             print repr(rule)
-            print 'SourceFilename', repr(sourcefilename), 'has no precedent TargetFilename.  Exiting...'
+            print 'Source file', repr(sourcefilename), 'has no precedent target file.  Exiting...'
             sys.exit()
         count = count + 1
     return listofrulesparsed
@@ -380,7 +380,7 @@ def comparesize(sizebefore, sizeafter):
         reports if sizes are the same, or
         warns if sizes are different."""
     print 'Size pre was', sizebefore
-    print 'Size post is', sizeafter
+    print 'Size post is', sizeafter, '- includes files (if any) moved to other directories'
     if sizebefore == sizeafter:
         print 'Done: data shawkled and intact!'
     else:
@@ -529,10 +529,13 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    os.chdir('/home/tbaker/shawkle/testdata/a')
+
+    home = os.environ.get("HOME")
+    testdata = home + '/shawkle/testdata/a'
+    os.chdir(testdata)  # uncomment to use test data
+
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
-    filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
     sizebefore             = totalsize()
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
@@ -540,6 +543,7 @@ if __name__ == "__main__":
     #shuffle(rules, datalines)
     shuffle2(rules, datalines)
     sizeafter              = totalsize()
+    filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
     relocatefiles(filesanddestinations)
     datafilesaftermove     = datals()
     sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
