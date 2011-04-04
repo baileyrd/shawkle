@@ -1,6 +1,16 @@
 Issues with shawkle
 
 ----------------------------------------------------------------------
+Need to add test that filenames in rule files do not differ only by case
+    The following leads to loss of data under Cygwin!
+    1|^FTMP|lines|a|
+    1|^TOP|lines|A|
+
+----------------------------------------------------------------------
+Function shuffle2() uses dictionary structure, but runs slower
+    Possibly remove to separate file?
+
+----------------------------------------------------------------------
 Arguments
     shawkle.py --cloud "$HOME/u/agendab/cloud" - this works
     shawkle.py --cloud "~/u/agendab/cloud" - this does not
@@ -11,19 +21,21 @@ Sorting
     Reverse sorting.
 
 ----------------------------------------------------------------------
-Need to add test that filenames in rule files do not differ only by case
-    The following leads to loss of data under Cygwin!
-
-    1|^FTMP|lines|a|
-    1|^TOP|lines|A|
-
-----------------------------------------------------------------------
 Use pydoc to generate simple HTML manual page
     /usr/lib/python2.6/pydoc.py - see Learning Python
 
 ----------------------------------------------------------------------
-Test on Unix system where files listed may not be opened, or directory writeable, because of permissions
+Possible issues regarding permissions
+    Test on Unix system where files listed may not be opened, 
+    or directory writeable, because of permissions
 
 ----------------------------------------------------------------------
 Is requirement to have local and global files arbitrary?
     getrules() could be changed to allow any number of rule files - at least one...
+
+----------------------------------------------------------------------
+Assumes that .html will be in current directory.
+    p.add_option("--htmldir", action="store", type="string", dest="htmldir", default=".html",
+                help="name of directory for urlified HTML files; default './.html'")
+
+
