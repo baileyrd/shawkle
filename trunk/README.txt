@@ -1,6 +1,6 @@
 Shawkle: Gettings Things Done with rule-based processing of plain-text lists
 
-Updated: 2011-03-18
+Updated: 2011-04-04
 
 This Python script is designed to process plain-text files,
 composed of "lines" of screen width (e.g., 120 columns)
