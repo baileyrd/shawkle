@@ -39,3 +39,9 @@ Assumes that .html will be in current directory.
                 help="name of directory for urlified HTML files; default './.html'")
 
 
+----------------------------------------------------------------------
+Should not print 
+    Using config file: '.files2dirs' - specifies names of files and destination directories
+    Mapping file '.files2dirs' does not exist - exiting...
+
+    if there is no file .files2dirs
