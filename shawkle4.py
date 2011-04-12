@@ -10,8 +10,8 @@ def getoptions():
         help="file, contents of which to be prefixed to each urlified HTML file; default ''")
     p.add_option("--files2dirs", action="store", type="string", dest="files2dirs", default='.files2dirs',
         help="files with corresponding target directories; default './.files2dirs'")
-    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='.globalrules',
-        help="rules used globally (typically an absolute pathname), processed first; default '.globalrules'")
+    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='',
+        help="rules used globally (typically an absolute pathname), processed first; default ''")
     p.add_option("--localrules", action="store", type="string", dest="localrules", default=".rules",
         help="rules used locally (typically a relative pathname), processed second; default './.rules'")
     p.add_option("--sedtxt", action="store", type="string", dest="sedtxt", default=".sedtxt",
@@ -121,23 +121,25 @@ def slurpdata(datafileslisted):
     return alldatalines
 
 def getrules(globalrules, localrules):
-    """Consolidates the lines of raw global and local rule files into one list.
+    """Consolidates the lines of (optional) global and (mandatory) local rule files into one list.
     Deletes comments and blank lines.  Performs sanity checks to ensure well-formedness of rules.
     Returns a consolidated list of rules, each item itself a list of rule components.
-    Note 2011-03-28: could generalize this function -- Why require global rules? And why just two rule files?
-    Also: test with illegal filenames.  Maybe also test for dotfiles; when used as source or target files,
-    dot files would throw off the size test in comparesize()."""
+    @@TODO
+    -- Test with illegal filenames.  
+    -- Maybe also test for dot files.  When used as source or target files,
+       dot files would throw off the size test in comparesize()."""
     globalrules = os.path.expanduser(globalrules)
     localrules = os.path.expanduser(localrules)
     listofrulefiles = [ str(globalrules), str(localrules) ]
     listofrulesraw = []
     for file in listofrulefiles:
-        try:
-            rulefilelines = list(open(file))
-        except:
-            print 'Rule file', repr(file), 'does not exist - exiting...'
-            sys.exit()
-        listofrulesraw = listofrulesraw + rulefilelines
+        if file:
+            try:
+                rulefilelines = list(open(file))
+            except:
+                print 'Rule file', repr(file), 'does not exist - exiting...'
+                sys.exit()
+            listofrulesraw = listofrulesraw + rulefilelines
     print "Using config file:", repr(globalrules), "- global rule file"
     print "Using config file:", repr(localrules), "- local rule file"
     listofrulesparsed = []
@@ -189,7 +191,7 @@ def getrules(globalrules, localrules):
     for rule in listofrulesparsed:
         sourcefilename = rule[2]
         targetfilename = rule[3]
-        valid_chars = "-_.%s%s" % (string.ascii_letters, string.digits)
+        valid_chars = "-_=.%s%s" % (string.ascii_letters, string.digits)
         filenames = [ sourcefilename, targetfilename ]
         for filename in filenames:
             for c in filename:
@@ -380,7 +382,7 @@ def comparesize(sizebefore, sizeafter):
         reports if sizes are the same, or
         warns if sizes are different."""
     print 'Size pre was', sizebefore
-    print 'Size post is', sizeafter, '- includes files (if any) moved to other directories'
+    print 'Size post is', sizeafter, '- includes files, if any, moved to other directories'
     if sizebefore == sizeafter:
         print 'Done: data shawkled and intact!'
     else:
