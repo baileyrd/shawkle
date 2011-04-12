@@ -531,9 +531,9 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    home = os.environ.get("HOME")            # uncomment to use test data
-    testdata = home + '/shawkle/testdata/a'  # uncomment to use test data
-    os.chdir(testdata)                       # uncomment to use test data
+    #home = os.environ.get("HOME")            # uncomment to use test data
+    #testdata = home + '/shawkle/testdata/a'  # uncomment to use test data
+    #os.chdir(testdata)                       # uncomment to use test data
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     sizebefore             = totalsize()
