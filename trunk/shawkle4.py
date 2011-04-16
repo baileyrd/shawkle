@@ -6,22 +6,39 @@ import os, re, shutil, string, sys, datetime, optparse
 def getoptions():
     p = optparse.OptionParser(description="Shawkle - Rule-driven maintenance of plain-text lists",
         prog="shawkle.py", version="0.5", usage="%prog")
-    p.add_option("--cloud", action="store", type="string", dest="cloud", default="",
-        help="file, contents of which to be prefixed to each urlified HTML file; default ''")
+    p.add_option("--cloud", action="store", type="string", dest="cloud", default="cloud",
+        help="file, contents of which to be prefixed to each urlified HTML file; default 'cloud'")
     p.add_option("--files2dirs", action="store", type="string", dest="files2dirs", default='.files2dirs',
-        help="files with corresponding target directories; default './.files2dirs'")
-    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='',
-        help="rules used globally (typically an absolute pathname), processed first; default ''")
+        help="files with corresponding target directories; default '.files2dirs'")
+    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='.global',
+        help="rules used globally (typically an absolute pathname), processed first; default '.global'")
     p.add_option("--localrules", action="store", type="string", dest="localrules", default=".rules",
-        help="rules used locally (typically a relative pathname), processed second; default './.rules'")
+        help="rules used locally (typically a relative pathname), processed second; default '.rules'")
     p.add_option("--sedtxt", action="store", type="string", dest="sedtxt", default=".sedtxt",
-        help="stream edits for plain text, eg, expanding drive letters to URIs; default './.sedtxt'")
+        help="stream edits for plain text, eg, expanding drive letters to URIs; default '.sedtxt'")
     p.add_option("--sedhtml", action="store", type="string", dest="sedhtml", default=".sedhtml",
-        help="stream edits for urlified HTML, eg, shortening visible pathnames; default './.sedhtml'")
+        help="stream edits for urlified HTML, eg, shortening visible pathnames; default '.sedhtml'")
     p.add_option("--htmldir", action="store", type="string", dest="htmldir", default=".html",
-        help="name of directory for urlified HTML files; default './.html'")
+        help="name of directory for urlified HTML files; default '.html'")
     ( options, arguments ) = p.parse_args()
     return options
+
+def absfilename(filename):
+    filenameexpanded = os.path.abspath(filename)
+    if os.path.isfile(filenameexpanded):
+        filename = filenameexpanded 
+    #else:
+    #    print 'File', repr(filename), 'does not exist - skipping...'
+    return filename
+
+def absdirname(dirname):
+    dirnameexpanded = os.path.abspath(dirname)
+    if os.path.isdir(dirnameexpanded):
+        dirname = dirnameexpanded 
+    #else:
+    #    print 'Directory', repr(dirname), 'does not exist - skipping...'
+    #    dirname = ''
+    return dirname
 
 def datals():
     """Returns list of files in current directory, excluding dot files and subdirectories.
@@ -37,12 +54,12 @@ def datals():
                 print 'Detected temporary file', repr(pathname), '- delete and re-run - exiting...'
                 sys.exit()
             if pathname[0] != ".":
-                filelist.append(pathname)
+                filelist.append(absfilename(pathname))
     return filelist
 
 def removefiles(targetdirectory):
     pwd = os.getcwd()
-    abstargetdir = pwd + '/' + targetdirectory
+    abstargetdir = absdirname(targetdirectory)
     if os.path.isdir(abstargetdir):
         os.chdir(abstargetdir)
         files = datals()
@@ -57,8 +74,8 @@ def removefiles(targetdirectory):
 
 def movefiles(sourcedirectory, targetdirectory):
     pwd = os.getcwd()
-    abssourcedir = pwd + '/' + sourcedirectory
-    abstargetdir = pwd + '/' + targetdirectory
+    abssourcedir = absdirname(sourcedirectory)
+    abstargetdir = absdirname(targetdirectory)
     if os.path.isdir(abssourcedir):
         if os.path.isdir(abstargetdir):
             os.chdir(abssourcedir)
@@ -78,7 +95,9 @@ def movefiles(sourcedirectory, targetdirectory):
 
 def movetobackups(filelist):
     """Moves given list of files to directory "$PWD/.backup", 
-    bumping previous backups to ".backupi", ".backupii", and ".backupiii"."""
+    bumping previous backups to ".backupi", ".backupii", and ".backupiii".
+    2011-04-16: Does not test for an unsuccessful attempt to create a directory
+    e.g., because of missing permissions."""
     if not filelist:
         print 'No data here to back up or process - exiting...'
         sys.exit()
@@ -95,14 +114,13 @@ def movetobackups(filelist):
 
 def totalsize():
     """Returns total size in bytes of files in current directory,
-    verbosely removing files of length zero."""
+    silently removing files of length zero."""
     totalsize = 0
     print 'Removing zero-length files'
     for file in os.listdir(os.getcwd()):
         if os.path.isfile(file):  # ignore directories, especially hidden ("dot") directories
             filesize = os.path.getsize(file)
             if filesize == 0:
-                # print 'Removing zero-length file:', repr(file) # Uncomment to list each file, verbosely
                 os.remove(file)
             else:
                 if file[0] != ".":
@@ -120,7 +138,7 @@ def slurpdata(datafileslisted):
     alldatalines.sort()
     return alldatalines
 
-def getrules(globalrules, localrules):
+def getrules(globalrulefile, localrulefile):
     """Consolidates the lines of (optional) global and (mandatory) local rule files into one list.
     Deletes comments and blank lines.  Performs sanity checks to ensure well-formedness of rules.
     Returns a consolidated list of rules, each item itself a list of rule components.
@@ -128,20 +146,22 @@ def getrules(globalrules, localrules):
     -- Test with illegal filenames.  
     -- Maybe also test for dot files.  When used as source or target files,
        dot files would throw off the size test in comparesize()."""
-    globalrules = os.path.expanduser(globalrules)
-    localrules = os.path.expanduser(localrules)
-    listofrulefiles = [ str(globalrules), str(localrules) ]
-    listofrulesraw = []
-    for file in listofrulefiles:
-        if file:
-            try:
-                rulefilelines = list(open(file))
-            except:
-                print 'Rule file', repr(file), 'does not exist - exiting...'
-                sys.exit()
-            listofrulesraw = listofrulesraw + rulefilelines
-    print "Using config file:", repr(globalrules), "- global rule file"
-    print "Using config file:", repr(localrules), "- local rule file"
+    globalrulefile = absfilename(globalrulefile)
+    localrulefile = absfilename(localrulefile)
+    if globalrulefile:
+        try:
+            globalrulelines = []
+            globalrulelines = list(open(localrulefile))
+            print "Using config file:", repr(globalrulefile), "- global rule file"
+        except:
+            pass
+    try:
+        localrulelines = list(open(localrulefile))
+        print "Using config file:", repr(localrulefile), "- local rule file"
+    except:
+        print 'Rule file', repr(localrulefile), 'does not exist (or is unusable) - exiting...'
+        sys.exit()
+    listofrulesraw = globalrulelines + localrulelines
     listofrulesparsed = []
     for line in listofrulesraw:
         linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
@@ -194,6 +214,9 @@ def getrules(globalrules, localrules):
         valid_chars = "-_=.%s%s" % (string.ascii_letters, string.digits)
         filenames = [ sourcefilename, targetfilename ]
         for filename in filenames:
+            if filename[0] == ".":
+                print 'Filename', repr(filename), 'should not start with a dot...'
+                sys.exit()
             for c in filename:
                 if c not in valid_chars:
                     if ' ' in filename:
@@ -207,7 +230,7 @@ def getrules(globalrules, localrules):
             try:
                 open(filename, 'a+').close()  # like "touch" ensures that filename is writable
             except:
-                print 'Cannot open', repr(filename), 'as a file for appending - exiting...'
+                print 'Cannot open1', repr(filename), 'as a file for appending - exiting...'
                 sys.exit()
         createdfiles.append(targetfilename)
         if count == 0:
@@ -289,7 +312,6 @@ def shuffle(rules, datalines):
             print '%s [%s] "%s" to "%s"' % (field, searchkey, source, target)
         if rulenumber > 1:
             datalines = list(open(source))
-            #datalines = list[source]
         if field == 0:
             if searchkey == ".":
                 targetlines = [ line for line in datalines ]
@@ -396,27 +418,28 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         optionally stream-editing the urlified text using before-and-after transforms (sedhtml).
         Note: Need to replace fourth argument of urlify with something like str(arguments.htmldir) - test...
         urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.imac', optionalcloudfile)"""
-    cloud = os.path.expanduser(cloud)
+    cloud = absfilename(cloud)
     cloudlines = []
     if os.path.isfile(cloud):
+        print "Prepending file", repr(cloud), "to each urlified file"
         cloudfile = open(cloud, 'r')
         cloudlines = cloudfile.readlines()
         cloudfile.close()
+    htmldir = absdirname(htmldir)
     if not os.path.isdir(htmldir):
         print 'Creating directory', repr(htmldir)
         os.mkdir(htmldir)
     else:
         removefiles(htmldir)
-    abshtmldir = str(os.getcwd()) + '/' + htmldir
-    print 'Generating urlified files in directory', repr(abshtmldir)
-    if cloud != '': print "Prepending file", repr(cloud), "to each urlified file"
+    #abshtmldir = str(os.getcwd()) + '/' + htmldir
+    print 'Generating urlified files in directory', repr(htmldir)
     for file in listofdatafiles:
         try:
             openfile = open(file, 'r')
             openfilelines = openfile.readlines()
             openfilelines = cloudlines + openfilelines
         except:
-            print 'Cannot open', file, '- exiting...'
+            print 'Cannot open2', file, '- exiting...'
             sys.exit()
         openfile.close()
         urlifiedlines = []
@@ -438,11 +461,11 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 except:
                     pass
             urlifiedlines.append(line)
-        filehtml = abshtmldir + '/' + file + '.html'
+        filehtml = htmldir + '/' + file + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
         except:
-            print 'Cannot open', repr(filehtml), '- exiting...'
+            print 'Cannot open3', repr(filehtml), '- exiting...'
             sys.exit()
         openfilehtml.write('<PRE>\n')
         linenumber = 1
