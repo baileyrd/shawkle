@@ -257,13 +257,10 @@ def getmappings(mappings, helpmessage):
     mappingsraw = []
     mappingsparsed = []
     try:
-        mappings = open(mappings, 'rU')        # 'rU' translates any line separator to '\n'
-        mappingsraw = mappings.readlines()
+        mappingsraw = list(open(mappings))
     except:
-        print 'Mapping file', repr(mappings), 'does not exist - exiting...'
+        print 'Config file', repr(mappings), 'does not exist - skipping...'
         return mappingsparsed
-        #sys.exit()
-    mappings.close()
     for line in mappingsraw:
         linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
         if len(linesplitonorbar) == 2:
