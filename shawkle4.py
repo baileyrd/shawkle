@@ -422,26 +422,21 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
     cloudlines = []
     if os.path.isfile(cloud):
         print "Prepending file", repr(cloud), "to each urlified file"
-        cloudfile = open(cloud, 'r')
-        cloudlines = cloudfile.readlines()
-        cloudfile.close()
+        cloudlines = list(open(cloud))
     htmldir = absdirname(htmldir)
     if not os.path.isdir(htmldir):
         print 'Creating directory', repr(htmldir)
         os.mkdir(htmldir)
     else:
         removefiles(htmldir)
-    #abshtmldir = str(os.getcwd()) + '/' + htmldir
     print 'Generating urlified files in directory', repr(htmldir)
     for file in listofdatafiles:
         try:
-            openfile = open(file, 'r')
-            openfilelines = openfile.readlines()
+            openfilelines = list(open(file))
             openfilelines = cloudlines + openfilelines
         except:
             print 'Cannot open2', file, '- exiting...'
             sys.exit()
-        openfile.close()
         urlifiedlines = []
         for line in openfilelines:
             for sedmap in sedtxt:
@@ -461,7 +456,8 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 except:
                     pass
             urlifiedlines.append(line)
-        filehtml = htmldir + '/' + file + '.html'
+        # filehtml = htmldir + '/' + file + '.html'
+        filehtml = file + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
         except:
