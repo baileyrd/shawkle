@@ -453,12 +453,11 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
                 except:
                     pass
             urlifiedlines.append(line)
-        # filehtml = htmldir + '/' + file + '.html'
-        filehtml = file + '.html'
+        filehtml = htmldir + '/' + os.path.basename(file) + '.html'
         try:
             openfilehtml = open(filehtml, 'w')
         except:
-            print 'Cannot open3', repr(filehtml), '- exiting...'
+            print 'Cannot open3', repr(filehtml), 'for writing - exiting...'
             sys.exit()
         openfilehtml.write('<PRE>\n')
         linenumber = 1
