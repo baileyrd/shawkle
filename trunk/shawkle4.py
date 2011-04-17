@@ -27,17 +27,12 @@ def absfilename(filename):
     filenameexpanded = os.path.abspath(filename)
     if os.path.isfile(filenameexpanded):
         filename = filenameexpanded 
-    #else:
-    #    print 'File', repr(filename), 'does not exist - skipping...'
     return filename
 
 def absdirname(dirname):
     dirnameexpanded = os.path.abspath(dirname)
     if os.path.isdir(dirnameexpanded):
         dirname = dirnameexpanded 
-    #else:
-    #    print 'Directory', repr(dirname), 'does not exist - skipping...'
-    #    dirname = ''
     return dirname
 
 def datals():
