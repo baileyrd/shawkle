@@ -146,7 +146,7 @@ def getrules(globalrulefile, localrulefile):
     if globalrulefile:
         try:
             globalrulelines = []
-            globalrulelines = list(open(localrulefile))
+            globalrulelines = list(open(globalrulefile))
             print "Using config file:", repr(globalrulefile), "- global rule file"
         except:
             pass
