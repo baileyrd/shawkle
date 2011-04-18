@@ -24,13 +24,13 @@ def getoptions():
     return options
 
 def absfilename(filename):
-    filenameexpanded = os.path.abspath(filename)
+    filenameexpanded = os.path.abspath(os.path.expanduser(filename))
     if os.path.isfile(filenameexpanded):
         filename = filenameexpanded 
     return filename
 
 def absdirname(dirname):
-    dirnameexpanded = os.path.abspath(dirname)
+    dirnameexpanded = os.path.abspath(os.path.expanduser(dirname))
     if os.path.isdir(dirnameexpanded):
         dirname = dirnameexpanded 
     return dirname
