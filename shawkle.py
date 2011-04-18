@@ -10,8 +10,8 @@ def getoptions():
         help="file, contents of which to be prefixed to each urlified HTML file; default 'cloud'")
     p.add_option("--files2dirs", action="store", type="string", dest="files2dirs", default='.files2dirs',
         help="files with corresponding target directories; default '.files2dirs'")
-    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='.global',
-        help="rules used globally (typically an absolute pathname), processed first; default '.global'")
+    p.add_option("--globalrules", action="store", type="string", dest="globalrules", default='.globalrules',
+        help="rules used globally (typically an absolute pathname), processed first; default '.globalrules'")
     p.add_option("--localrules", action="store", type="string", dest="localrules", default=".rules",
         help="rules used locally (typically a relative pathname), processed second; default '.rules'")
     p.add_option("--sedtxt", action="store", type="string", dest="sedtxt", default=".sedtxt",
@@ -541,9 +541,9 @@ def urlify_string(s):
     return re.sub(pat, r"<A HREF=\1>\1</A>", s)
 
 if __name__ == "__main__":
-    #home = os.environ.get("HOME")            # uncomment to use test data
-    #testdata = home + '/shawkle/testdata/a'  # uncomment to use test data
-    #os.chdir(testdata)                       # uncomment to use test data
+    home = os.environ.get("HOME")            # uncomment to use test data
+    testdata = home + '/shawkle/testdata/a'  # uncomment to use test data
+    os.chdir(testdata)                       # uncomment to use test data
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     sizebefore             = totalsize()
