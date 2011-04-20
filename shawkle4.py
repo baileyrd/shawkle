@@ -225,7 +225,7 @@ def getrules(globalrulefile, localrulefile):
             try:
                 open(filename, 'a+').close()  # like "touch" ensures that filename is writable
             except:
-                print 'Cannot open1', repr(filename), 'as a file for appending - exiting...'
+                print 'Cannot open', repr(filename), 'as a file for appending - exiting...'
                 sys.exit()
         createdfiles.append(targetfilename)
         if count == 0:
@@ -427,7 +427,7 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
             openfilelines = list(open(file))
             openfilelines = cloudlines + openfilelines
         except:
-            print 'Cannot open2', file, '- exiting...'
+            print 'Cannot open', file, '- exiting...'
             sys.exit()
         urlifiedlines = []
         for line in openfilelines:
@@ -452,7 +452,7 @@ def urlify(listofdatafiles, sedtxt, sedhtml, htmldir, cloud):
         try:
             openfilehtml = open(filehtml, 'w')
         except:
-            print 'Cannot open3', repr(filehtml), 'for writing - exiting...'
+            print 'Cannot open', repr(filehtml), 'for writing - exiting...'
             sys.exit()
         openfilehtml.write('<PRE>\n')
         linenumber = 1
