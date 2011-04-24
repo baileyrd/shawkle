@@ -19,5 +19,4 @@ years.
 The SVN project includes a directory of test data.  In order
 to run Shawkle using test data:
   * Install the SVN project under your home directory ("~").
-  * Uncomment the first three lines of the "if name == main"
-    block, which point shawkle at the test data.
+  * Uncomment the first three lines of the "if name == main" block, which point shawkle at the test data.
