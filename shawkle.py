@@ -550,8 +550,8 @@ if __name__ == "__main__":
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
     movetobackups(datafilesbefore)
-    #shuffle(rules, datalines)
-    shuffle2(rules, datalines)
+    shuffle(rules, datalines)   # faster variant that writes files to disk at each step
+    #shuffle2(rules, datalines) # slower variant that collects lists in dictionary structure, then writes files once
     sizeafter              = totalsize()
     filesanddestinations   = getmappings(arguments.files2dirs, '- specifies names of files and destination directories')
     relocatefiles(filesanddestinations)
