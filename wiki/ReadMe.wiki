@@ -9,7 +9,7 @@ individual lines into various files based on pattern matching.
 The patterns to be matched, along with the source and target
 files to which the patterns refer, are expressed in a set of
 "rules" that are processed in order.  This Python script
-replaces http://www.lifehacker.com/software/command-line/getting-things-done-with-rulebased-list-processing-217063.php earlier incarnations of the script in Korn shell]
+replaces [http://www.lifehacker.com/software/command-line/getting-things-done-with-rulebased-list-processing-217063.php earlier incarnations of the script in Korn shell]
 that I have been continuously using to manage my to-do lists,
 activity logs, and browser favorites for the past sixteen
 years.
