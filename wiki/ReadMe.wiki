@@ -14,7 +14,7 @@ that I have been continuously using to manage my to-do lists,
 activity logs, and browser favorites for the past eighteen
 years.
 
-== Details ==
+== Running Shawkle with test data ==
 
 The [http://code.google.com/p/shawkle/ SVN project] includes a directory of test data.  In order
 to run Shawkle using test data:
