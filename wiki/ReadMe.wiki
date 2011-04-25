@@ -19,6 +19,6 @@ years.
 The [http://code.google.com/p/shawkle/ SVN project] includes a directory of test data.  In order
 to run Shawkle using test data:
   * Install the SVN project, https://shawkle.googlecode.com/svn/trunk, under your home directory ("~/shawkle").
-  * Uncomment the first three lines of the "if name == main" block, which run shawkle using the test data included in the SVN project.
+  * Uncomment the first three lines of the "if name == main" block, which run shawkle using the test data included in the SVN project (~/shawkle/testdata/a).
 
 [http://wingware.com http://wingware.com/images/coded-with-logo-129x66.png]
