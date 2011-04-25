@@ -559,6 +559,7 @@ if __name__ == "__main__":
     sedtxtmappings         = getmappings(arguments.sedtxt, '- specifies stream edits before urlification')
     sedhtmlmappings        = getmappings(arguments.sedhtml, '- specifies stream edits after urlification')
     optionalcloudfile      = arguments.cloud
-    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, '.html', optionalcloudfile)
+    htmldirectory          = os.path.abspath(os.path.expanduser(arguments.htmldir))
+    urlify(datafilesaftermove, sedtxtmappings, sedhtmlmappings, htmldirectory, optionalcloudfile)
     comparesize(sizebefore, sizeafter)
 
