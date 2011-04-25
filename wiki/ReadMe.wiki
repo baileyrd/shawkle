@@ -1,6 +1,6 @@
 #summary Shawkle - rule-based processing of plain-text lists
 
-= Introduction =
+= Shawkle - rule-based processing of plain-text lists =
 
 This Python script is designed to process plain-text files,
 composed of "lines" of screen width (e.g., 120 columns)
@@ -14,7 +14,7 @@ that I have been continuously using to manage my to-do lists,
 activity logs, and browser favorites for the past sixteen
 years.
 
-= Details =
+== Details ==
 
 The [http://code.google.com/p/shawkle/ SVN project] includes a directory of test data.  In order
 to run Shawkle using test data:
