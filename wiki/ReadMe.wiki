@@ -9,16 +9,16 @@ individual lines into various files based on pattern matching.
 The patterns to be matched, along with the source and target
 files to which the patterns refer, are expressed in a set of
 "rules" that are processed in order.  This Python script
-replaces earlier incarnations of the script in Korn shell
+replaces http://www.lifehacker.com/software/command-line/getting-things-done-with-rulebased-list-processing-217063.php earlier incarnations of the script in Korn shell]
 that I have been continuously using to manage my to-do lists,
 activity logs, and browser favorites for the past sixteen
 years.
 
 = Details =
 
-The SVN project includes a directory of test data.  In order
+The [http://code.google.com/p/shawkle/ SVN project] includes a directory of test data.  In order
 to run Shawkle using test data:
-  * Install the SVN project under your home directory ("~").
+  * Install the SVN project, https://shawkle.googlecode.com/svn/trunk, under your home directory ("~/shawkle").
   * Uncomment the first three lines of the "if name == main" block, which run shawkle using the test data included in the SVN project.
 
 [http://wingware.com http://wingware.com/images/coded-with-logo-129x66.png]
