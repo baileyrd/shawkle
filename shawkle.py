@@ -159,7 +159,7 @@ def getrules(globalrulefile, localrulefile):
     listofrulesraw = globalrulelines + localrulelines
     listofrulesparsed = []
     for line in listofrulesraw:
-        linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
+        linesplitonorbar = line.partition('#')[0].strip().split('|')
         if len(linesplitonorbar) == 5:
             try:
                 linesplitonorbar[0] = int(linesplitonorbar[0])
@@ -257,7 +257,7 @@ def getmappings(mappings, helpmessage):
         print 'Config file', repr(mappings), 'does not exist - skipping...'
         return mappingsparsed
     for line in mappingsraw:
-        linesplitonorbar = line.strip().partition('#')[0].rstrip().split('|')
+        linesplitonorbar = line.partition('#')[0].strip().split('|')
         if len(linesplitonorbar) == 2:
             mappingsparsed.append(linesplitonorbar)
     return mappingsparsed
@@ -483,6 +483,7 @@ if __name__ == "__main__":
     arguments              = getoptions()
     rules                  = getrules(arguments.globalrules, arguments.localrules)
     sizebefore             = totalsize()
+    print 'Size of files is', sizebefore
     datafilesbefore        = datals()
     datalines              = slurpdata(datafilesbefore)
     movetobackups(datafilesbefore)
