@@ -45,3 +45,13 @@ Should not print
     Mapping file '.files2dirs' does not exist - exiting...
 
     if there is no file .files2dirs
+
+----------------------------------------------------------------------
+If run almost simultaneously
+
+Traceback (most recent call last):
+  File "/Users/tbaker/github/tombaker/Shuffle/src/shuffle.py", line 485, in <module>
+    sizebefore             = totalsize()
+  File "/Users/tbaker/github/tombaker/Shuffle/src/shuffle.py", line 119, in totalsize
+    os.remove(file)
+OSError: [Errno 2] No such file or directory: 'HUH'
